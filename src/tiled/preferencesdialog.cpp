@@ -31,6 +31,8 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QStyledItemDelegate>
+#include <QDir>
+#include <QHeaderView>
 
 #ifndef QT_NO_OPENGL
 //#include <QGLFormat>
@@ -172,6 +174,11 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     connect(mUi->raisePZPropertiesFile, &QAbstractButton::clicked, this, &PreferencesDialog::raisePropertiesFile);
     connect(mUi->lowerPZPropertiesFile, &QAbstractButton::clicked, this, &PreferencesDialog::lowerPropertiesFile);
     connect(mUi->themeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PreferencesDialog::themeChanged);
+    connect(mUi->browseTilesDirectory, &QPushButton::clicked, this, &PreferencesDialog::browseTilesDirectory);
+    connect(mUi->gridWidthDefault, &QAbstractButton::clicked, this, &PreferencesDialog::defaultGridOpacity);
+    connect(mUi->gridWidthDefault, &QAbstractButton::clicked, this, &PreferencesDialog::defaultGridWidth);
+    connect(mUi->gridOpacity, qOverload<int>(&QSpinBox::valueChanged), Preferences::instance(), &Preferences::setGridOpacity);
+    connect(mUi->gridWidth, qOverload<int>(&QSpinBox::valueChanged), Preferences::instance(), &Preferences::setGridWidth);
 #endif // ZOMBOID
 
     connect(mUi->objectTypesTable->selectionModel(),
@@ -329,6 +336,28 @@ void PreferencesDialog::defaultGridColor()
 {
     Preferences::instance()->setGridColor(Qt::black);
     mUi->gridColor->setColor(Preferences::instance()->gridColor());
+}
+
+void PreferencesDialog::browseTilesDirectory()
+{
+    QString directory = QFileDialog::getExistingDirectory(this, tr("Select Tiles Directory"),
+                                                          Preferences::instance()->tilesDirectory());
+    if (!directory.isEmpty()) {
+        Preferences::instance()->setTilesDirectory(directory);
+        mUi->tilesDirectory->setText(QDir::toNativeSeparators(directory));
+    }
+}
+
+void PreferencesDialog::defaultGridOpacity()
+{
+    Preferences::instance()->setGridOpacity(128);
+    mUi->gridOpacity->setValue(Preferences::instance()->gridOpacity());
+}
+
+void PreferencesDialog::defaultGridWidth()
+{
+    Preferences::instance()->setGridWidth(1);
+    mUi->gridWidth->setValue(Preferences::instance()->gridWidth());
 }
 
 void PreferencesDialog::defaultBackgroundColor()

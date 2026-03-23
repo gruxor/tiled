@@ -145,7 +145,7 @@ public:
     const char *type() const { return "tile"; }
 
     void cloned();
-
+    int level();
     void setTile(int x, int y, Tile *tile);
     Tile *tileAt(int x, int y);
 
@@ -200,11 +200,14 @@ public:
     LuaColor color();
 
     void addObject(LuaMapObject *object);
+    void insertObject(int index, LuaMapObject* object);
     QList<LuaMapObject*> objects();
 
     ObjectGroup *mCloneObjectGroup;
     ObjectGroup *mOrig;
     QList<LuaMapObject*> mObjects;
+    QList<LuaMapObject*> mRemovedObjects;
+    QMap<QString, LuaMapObject*> mObjectsByName;
     QColor mColor;
 };
 
@@ -344,7 +347,10 @@ public:
     LuaLayer *layer(const char *name);
     LuaTileLayer *tileLayer(const char *name);
 
+    LuaObjectGroup *objectLayer(const char *name);
+
     LuaTileLayer *newTileLayer(const char *name);
+    LuaObjectGroup *newObjectLayer(const char *name);
 
     void addLayer(LuaLayer *layer);
     void insertLayer(int index, LuaLayer *layer);

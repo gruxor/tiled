@@ -190,6 +190,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
     , mZoomable(nullptr)
     , mZoomComboBox(new QComboBox)
     , mStatusInfoLabel(new QLabel)
+    , mSettings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat)
 #ifdef ZOMBOID
     , mBmpClipboard(new BmpClipboard(this))
 #endif
@@ -3351,7 +3352,7 @@ void MainWindow::readSettings()
 void MainWindow::updateWindowTitle()
 {
     if (mMapDocument) {
-        setWindowTitle(tr("[*]%1 - Tiled").arg(mMapDocument->displayName()));
+        setWindowTitle(tr("[*]%1 - Tiled Unofficial Fork (Unified 2026 Patch)").arg(mMapDocument->displayName()));
         setWindowFilePath(mMapDocument->fileName());
         setWindowModified(mMapDocument->isModified());
     } else {

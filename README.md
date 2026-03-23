@@ -1,65 +1,36 @@
-Tiled Map Editor - http://www.mapeditor.org/
+Project Zomboid TileZed
+Forked From https://github.com/timbaker/tiled
 
-About Tiled
--------------------------------------------------------------------------------
+**Fully standalone:**
+The new version of the tools is entirely standalone. It no longer relies on the Windows registry or a folder in %userprofile%. This allows you to:
+    Maintain multiple versions of the tools on the same PC.
+    Back up your entire environment in one go.
 
-Tiled is a general purpose tile map editor. It is meant to be used for editing
-maps of any tile-based game, be it an RPG, a platformer or a Breakout clone.
+**Improved themes:**
+    A dark theme is included by default.
+    A new theme management system allows you to add your own themes. Simply search for "QSS themes" on your favorite search engine.
 
-Tiled is very flexible, for example there are no restrictions on map size, tile
-size or the number of layers or tiles. Also, it allows arbitrary properties to
-be set on the map, its layers, the tiles or on the objects. Its map format
-(TMX) is relatively easy to understand and allows a map to use multiple
-tilesets while also allowing each tileset to grow or shrink as necessary later.
+**Enhanced tiles:**
+    Improved visibility of tiles and their names.
+    Tiles can still be exported via right-click.
+    The Tiles Unpacker now includes advanced options beyond just prefix handling.
 
-About the Qt Version
--------------------------------------------------------------------------------
+**Route generation for the InGameMap added.**
 
-Tiled was originally written in Java. In 2008 the Qt version was started with
-the goal to replace the Java version with a faster, better looking and even
-easier to use map editor. Qt offered many opportunities to improve the
-performance and usability of the user interface, and has a more extensive
-feature set than the standard Java libraries.
+**Full Buildings for the InGameMap added.**
 
-Compiling
--------------------------------------------------------------------------------
+**Built-in LUA engine fixed for the InGameMap added.**
 
-Make sure the Qt (>= 4.6) development libraries are installed:
+**Thumbnail up to 8192 pixels, for a better map rendering**
+You can also use the pngs to show you map without externals apps
+(and the thumbnails generator is also fixed)
 
-* In Ubuntu/Debian: `sudo apt-get install libqt4-dev libqt4-opengl-dev zlib1g-dev`
-* In Fedora:        `yum install qt-devel`
-* In Arch Linux:    `pacman -S qt qt5-tools`
+**New Biomemap Generator:**
+    Based on two images (Main and _veg).
+    Includes automatic tile splitting.
 
-Now you can compile by running:
+**Support for B42 features:**
+    Fully compatible with additions like basements, animals, WorldGen, etc.
 
-    $ qmake (or qmake-qt4 on some systems, like Fedora)
-    $ make
-
-To do a shadow build, you can run qmake from a different directory and refer
-it to tiled.pro, for example:
-
-    $ mkdir build
-    $ cd build
-    $ qmake ../tiled.pro
-    $ make
-
-You can now simply run Tiled using bin/tiled.
-
-Installing
--------------------------------------------------------------------------------
-
-For installing Tiled you can run 'make install'. By default Tiled will install
-to /usr/local. You can change this prefix when running qmake, and/or you can
-change the install root when running make install, as follows:
-
-Use /usr instead of /usr/local:
-
-    $ qmake -r PREFIX=/usr
-
-(Recursive needed when it's not the first time that you're running qmake, since
-this affects nested pro files)
-
-Install to some packaging directory:
-
-    $ make install INSTALL_ROOT=/tmp/tiled-pkg
-
+**Included tilesheets:**
+    All necessary tilesheets are provided by default.

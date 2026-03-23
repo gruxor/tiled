@@ -112,6 +112,9 @@ void LayersPanelDelegate::paint(QPainter *painter,
 
     // Draw the tile image
     if (tile != 0) {
+        QString tileName = QFileInfo(tile->tileset()->imageSource()).baseName() + QLatin1Char('_') + QString::number(m->tileAt(index)->id());
+        QString tileId = QLatin1Char('_') + QString::number(m->tileAt(index)->id());
+
         const QVariant display = index.model()->data(index, Qt::DisplayRole);
         const QPixmap tileImage = QPixmap::fromImage(tile->image()); //display.value<QPixmap>();
         const int tileWidth = qCeil(tile->tileset()->tileWidth() * mView->zoomable()->scale());
@@ -125,6 +128,8 @@ void LayersPanelDelegate::paint(QPainter *painter,
                                                  -(dw - dw/2), -extra)
                             .adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom()),
                             tileImage);
+        painter->drawText(option.rect.left(), option.rect.top() + labelHeight,
+                    option.rect.width(), labelHeight, Qt::AlignHCenter, tileName);
     }
 #if 0
     // Overlay with highlight color when selected
@@ -607,6 +612,7 @@ TileLayersPanel::TileLayersPanel(QWidget *parent) :
     mCurrentLevel(-1),
     mCurrentLayerIndex(-1)
 {
+    mView->setObjectName(QLatin1String("layersPanelView"));
     mView->zoomable()->setScale(0.25);
 
     QComboBox *scaleCombo = new QComboBox;
@@ -738,6 +744,50 @@ void TileLayersPanel::setList()
     mView->setCurrentIndex(mView->model()->index(mCurrentLayerIndex));
     mView->setAutoScroll(true);
 }
+
+/*
+void TileLayersPanel::setList()
+{
+    mCurrentLevel = mDocument->currentLevel();
+
+    mView->clear();
+
+    CompositeLayerGroup *lg = mDocument->mapComposite()->layerGroupForLevel(mCurrentLevel);
+    if (!lg) return;
+
+    QStringList blendLayerNames = mDocument->mapComposite()->bmpBlender()->blendLayers();
+
+    int index = 0;
+    foreach (TileLayer *tl, lg->layers()) {
+        QString layerName = MapComposite::layerNameWithoutPrefix(tl);
+        Tile *tile = tl->contains(mTilePos) ? tl->cellAt(mTilePos).tile : 0;
+        TileLayer *blendLayer = lg->bmpBlendLayers().at(index);
+        if (blendLayer && blendLayer->contains(mTilePos))
+            if (!blendLayerNames.contains(tl->name()) ||
+                    !mDocument->map()->noBlend(tl->name())->get(mTilePos))
+                if (Tile *blendTile = blendLayer->cellAt(mTilePos).tile)
+                    tile = blendTile;
+        if (!tile)
+            tile = BuildingEditor::BuildingTilesMgr::instance()->noneTiledTile();
+        int layerIndex = mDocument->map()->layers().indexOf(tl);
+        mView->prependLayer(layerName, tile, layerIndex);
+        if (Preferences::instance()->enableDarkTheme())
+        {
+            QBrush brush(tl->isVisible() ? QColor("#1F1F1F") : Qt::lightGray);
+            mView->model()->setData(mView->model()->index(layerIndex), brush, Qt::BackgroundRole);
+        }
+        else {
+            QBrush brush(tl->isVisible() ? Qt::white : Qt::lightGray);
+            mView->model()->setData(mView->model()->index(layerIndex), brush, Qt::BackgroundRole);
+        }
+        ++index;
+    }
+
+    mView->setAutoScroll(false);
+    mView->setCurrentIndex(mView->model()->index(mCurrentLayerIndex));
+    mView->setAutoScroll(true);
+}
+*/
 
 void TileLayersPanel::activated(const QModelIndex &index)
 {

@@ -21,6 +21,7 @@
 #include "buildingpreferences.h"
 #include "buildingreader.h"
 #include "buildingtilesfile.h"
+#include "simplefile.h"
 
 #include "preferences.h"
 #include "tiledeffile.h"
@@ -117,7 +118,7 @@ BuildingTilesMgr::BuildingTilesMgr() :
     mMissingTile = TilesetManager::instance()->missingTile();
 
     Tileset *tileset = new Tileset(QLatin1String("none"), 64, 128);
-    tileset->setTransparentColor(Qt::white);
+    //tileset->setTransparentColor(Qt::white);
     QString fileName = QLatin1String(":/BuildingEditor/icons/none-tile.png");
     if (tileset->loadFromImage(QImage(fileName), fileName))
         mNoneTiledTile = tileset->tileAt(0);
@@ -293,6 +294,62 @@ QString BuildingTilesMgr::txtPath()
 #else
     return BuildingPreferences::instance()->configPath(txtName());
 #endif
+}
+
+static void writeTileEntry(SimpleFileBlock &parentBlock, BuildingTileEntry *entry)
+{
+    BuildingTileCategory *category = entry->category();
+    SimpleFileBlock block;
+    block.name = QLatin1String("entry");
+//    block.addValue("category", category->name());
+    for (int i = 0; i < category->enumCount(); i++) {
+        block.addValue(category->enumToString(i), entry->tile(i)->name());
+    }
+    for (int i = 0; i < category->enumCount(); i++) {
+        QPoint p = entry->offset(i);
+        if (p.isNull())
+            continue;
+        block.addValue("offset", QString(QLatin1String("%1 %2 %3"))
+                       .arg(category->enumToString(i)).arg(p.x()).arg(p.y()));
+    }
+    parentBlock.blocks += block;
+}
+
+static BuildingTileEntry *readTileEntry(BuildingTileCategory *category,
+                                        SimpleFileBlock &block,
+                                        QString &error)
+{
+    BuildingTileEntry *entry = new BuildingTileEntry(category);
+
+    foreach (SimpleFileKeyValue kv, block.values) {
+        if (kv.name == QLatin1String("offset")) {
+            QStringList split = kv.value.split(QLatin1Char(' '), QString::SkipEmptyParts);
+            if (split.size() != 3) {
+                error = BuildingTilesMgr::instance()->tr("Expected 'offset = name x y', got '%1'").arg(kv.value);
+                delete entry;
+                return 0;
+            }
+            int e = category->enumFromString(split[0]);
+            if (e == BuildingTileCategory::Invalid) {
+                error = BuildingTilesMgr::instance()->tr("Unknown %1 enum name '%2'")
+                        .arg(category->name()).arg(split[0]);
+                delete entry;
+                return 0;
+            }
+            entry->mOffsets[e] = QPoint(split[1].toInt(), split[2].toInt());
+            continue;
+        }
+        int e = category->enumFromString(kv.name);
+        if (e == BuildingTileCategory::Invalid) {
+            error = BuildingTilesMgr::instance()->tr("Unknown %1 enum name '%2'")
+                    .arg(category->name()).arg(kv.name);
+            delete entry;
+            return 0;
+        }
+        entry->mTiles[e] = BuildingTilesMgr::instance()->get(kv.value);
+    }
+
+    return entry;
 }
 
 // VERSION0: original format without 'version' keyvalue

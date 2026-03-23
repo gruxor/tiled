@@ -294,6 +294,12 @@ void LuaLayer::cloned()
 
 }
 
+int LuaTileLayer::level()
+{
+    int level;
+    MapComposite::levelForLayer(mName, &level);
+    return level;
+}
 /////
 
 LuaTileLayer::LuaTileLayer(TileLayer *orig) :
@@ -418,12 +424,26 @@ bool LuaTileLayer::replaceTile(Tile *oldTile, Tile *newTile)
     if (newTile == LuaMap::noneTile()) newTile = 0;
     initClone();
     bool replaced = false;
-    for (int y = 0; y < mClone->width(); y++) {
-        for (int x = 0; x < mClone->width(); x++) {
-            if (mCloneTileLayer->cellAt(x, y).tile == oldTile) {
-                mCloneTileLayer->setCell(x, y, Cell(newTile));
-                mAltered += QRect(x, y, 1, 1);
-                replaced = true;
+    if (oldTile == LuaMap::noneTile())
+    {
+        for (int y = 0; y < mClone->width(); y++) {
+            for (int x = 0; x < mClone->width(); x++) {
+                if (mCloneTileLayer->cellAt(x, y).isEmpty()) {
+                    mCloneTileLayer->setCell(x, y, Cell(newTile));
+                    mAltered += QRect(x, y, 1, 1);
+                    replaced = true;
+                }
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < mClone->width(); y++) {
+            for (int x = 0; x < mClone->width(); x++) {
+                if (mCloneTileLayer->cellAt(x, y).tile == oldTile) {
+                    mCloneTileLayer->setCell(x, y, Cell(newTile));
+                    mAltered += QRect(x, y, 1, 1);
+                    replaced = true;
+                }
             }
         }
     }
@@ -1151,6 +1171,27 @@ void LuaObjectGroup::cloned()
 {
     LuaLayer::cloned();
     mCloneObjectGroup = mClone->asObjectGroup();
+}
+
+//// LuaMap additions ////
+
+LuaObjectGroup* LuaMap::newObjectLayer(const char* name)
+{
+    LuaObjectGroup* layer = new LuaObjectGroup(name, 0, 0, width(), height());
+    addLayer(layer);
+    return layer;
+}
+
+LuaObjectGroup* LuaMap::objectLayer(const char* name)
+{
+    if (LuaLayer* layer = this->layer(name))
+        return layer->asObjectGroup();
+    return nullptr;
+}
+
+void LuaObjectGroup::insertObject(int index, LuaMapObject* object)
+{
+    mObjects.insert(index, object);
 }
 
 void LuaObjectGroup::setColor(LuaColor &color)
