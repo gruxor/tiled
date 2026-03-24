@@ -77,6 +77,9 @@ private slots:
     void raisePropertiesFile();
     void lowerPropertiesFile();
     void themeChanged(int index);
+    void fusionThemeModeToggled(bool checked);
+    void vistaThemeModeToggled(bool checked);
+    void legacyThemeModeToggled(bool checked);
     void updateActions();
     void browseTilesDirectory();
     void defaultGridOpacity();
@@ -86,6 +89,7 @@ private slots:
 private:
     void fromPreferences();
     void toPreferences();
+    void updateThemeModeUi();
 
     MapWriter::LayerDataFormat layerDataFormat() const;
 

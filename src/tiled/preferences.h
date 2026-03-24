@@ -158,7 +158,10 @@ public:
     QString theme() const
     { return mTheme; }
 
-    void applyTheme() const;
+    QString styleMode() const
+    { return mStyleMode; }
+
+    void applyTheme();
 
     int gridOpacity() const
     { return mGridOpacity; }
@@ -198,6 +201,7 @@ public slots:
     void setThumbnailsDirectory(const QString &path);
     void setShowCellBorder(bool show);
     void setTheme(const QString &theme);
+    void setStyleMode(const QString &styleMode);
     void setGridOpacity(int newOpacity);
     void setGridWidth(int newWidth);
 #endif
@@ -282,6 +286,7 @@ private:
     bool mShowInvisibleTiles;
     bool mShowCellBorder;
     QString mTheme;
+    QString mStyleMode;
     int mGridOpacity;
     int mGridWidth;
 #endif

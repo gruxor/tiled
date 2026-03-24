@@ -132,40 +132,40 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="themeLayout">
+           <layout class="QHBoxLayout" name="themeModeLayout">
             <item>
-             <widget class="QLabel" name="themeLabel">
+             <widget class="QLabel" name="themeModeLabel">
               <property name="text">
-               <string>Theme:</string>
+               <string>Style mode:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="themeCombo">
-              <item>
-               <property name="text">
-                <string>Default</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Breeze (Dark)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>QDarkStyle (Dark)</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>QDarkStyle (Light)</string>
-               </property>
-              </item>
+             <widget class="QRadioButton" name="fusionThemeMode">
+              <property name="text">
+               <string>Fusion</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_6">
+             <widget class="QRadioButton" name="vistaThemeMode">
+              <property name="text">
+               <string>Vista</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="legacyThemeMode">
+              <property name="text">
+               <string>Legacy</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_9">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -178,6 +178,68 @@
              </spacer>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QWidget" name="themeRow" native="true">
+            <layout class="QHBoxLayout" name="themeLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+             <item>
+              <widget class="QLabel" name="themeLabel">
+               <property name="text">
+                <string>Theme:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="themeCombo">
+               <item>
+                <property name="text">
+                 <string>Default</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Breeze (Dark)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>QDarkStyle (Dark)</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>QDarkStyle (Light)</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_2">

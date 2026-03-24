@@ -33,6 +33,7 @@
 #include <QStyledItemDelegate>
 #include <QDir>
 #include <QHeaderView>
+#include <QStyleFactory>
 
 #ifndef QT_NO_OPENGL
 //#include <QGLFormat>
@@ -137,8 +138,17 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     Utils::setThemeIcon(mUi->removeObjectTypeButton, "remove");
 
 #ifdef ZOMBOID
+    Preferences *prefs = Preferences::instance();
     mUi->tabWidget->setCurrentIndex(0);
-    mUi->themeCombo->setCurrentText(Preferences::instance()->theme());
+    mUi->themeCombo->setCurrentText(prefs->theme());
+    if (prefs->styleMode().compare(QLatin1String("fusion"), Qt::CaseInsensitive) == 0) {
+        mUi->fusionThemeMode->setChecked(true);
+    } else if (prefs->styleMode().compare(QLatin1String("windowsvista"), Qt::CaseInsensitive) == 0) {
+        mUi->vistaThemeMode->setChecked(true);
+    } else {
+        mUi->legacyThemeMode->setChecked(true);
+    }
+    updateThemeModeUi();
 #endif
 
     fromPreferences();
@@ -174,6 +184,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     connect(mUi->raisePZPropertiesFile, &QAbstractButton::clicked, this, &PreferencesDialog::raisePropertiesFile);
     connect(mUi->lowerPZPropertiesFile, &QAbstractButton::clicked, this, &PreferencesDialog::lowerPropertiesFile);
     connect(mUi->themeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PreferencesDialog::themeChanged);
+    connect(mUi->fusionThemeMode, &QAbstractButton::toggled, this, &PreferencesDialog::fusionThemeModeToggled);
+    connect(mUi->vistaThemeMode, &QAbstractButton::toggled, this, &PreferencesDialog::vistaThemeModeToggled);
+    connect(mUi->legacyThemeMode, &QAbstractButton::toggled, this, &PreferencesDialog::legacyThemeModeToggled);
     connect(mUi->browseTilesDirectory, &QPushButton::clicked, this, &PreferencesDialog::browseTilesDirectory);
     connect(mUi->gridOpacityDefault, &QAbstractButton::clicked, this, &PreferencesDialog::defaultGridOpacity);
     connect(mUi->gridWidthDefault, &QAbstractButton::clicked, this, &PreferencesDialog::defaultGridWidth);
@@ -440,8 +453,56 @@ void PreferencesDialog::lowerPropertiesFile()
 
 void PreferencesDialog::themeChanged(int index)
 {
+    Q_UNUSED(index)
     QString text = mUi->themeCombo->currentText();
     Preferences::instance()->setTheme(text);
+}
+
+void PreferencesDialog::fusionThemeModeToggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    Preferences::instance()->setStyleMode(QLatin1String("fusion"));
+    updateThemeModeUi();
+}
+
+void PreferencesDialog::vistaThemeModeToggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    Preferences::instance()->setStyleMode(QLatin1String("windowsvista"));
+    updateThemeModeUi();
+}
+
+void PreferencesDialog::legacyThemeModeToggled(bool checked)
+{
+    if (!checked)
+        return;
+
+    Preferences::instance()->setStyleMode(QLatin1String("windows"));
+    updateThemeModeUi();
+}
+
+void PreferencesDialog::updateThemeModeUi()
+{
+    const QStringList styleKeys = QStyleFactory::keys();
+    auto hasStyle = [&styleKeys](const QString &name) {
+        for (const QString &key : styleKeys) {
+            if (key.compare(name, Qt::CaseInsensitive) == 0)
+                return true;
+        }
+        return false;
+    };
+
+    const bool hasWindows = hasStyle(QLatin1String("windows"));
+    const bool hasWindowsVista = hasStyle(QLatin1String("windowsvista"));
+    const bool hasFusion = hasStyle(QLatin1String("fusion"));
+
+    mUi->fusionThemeMode->setEnabled(hasFusion);
+    mUi->vistaThemeMode->setEnabled(hasWindowsVista);
+    mUi->legacyThemeMode->setEnabled(hasWindows);
 }
 
 void PreferencesDialog::updateActions()

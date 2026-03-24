@@ -30,6 +30,8 @@
 #ifdef ZOMBOID
 #include <QApplication>
 #include <QDir>
+#include <QStyle>
+#include <QStyleFactory>
 #include <QTextStream>
 #endif
 #include <QDesktopServices>
@@ -100,6 +102,9 @@ Preferences::Preferences()
     mTilesetBackgroundColor = QColor(mSettings->value(QLatin1String("TilesetBackgroundColor"), QColor(Qt::white).name()).toString());
     mShowCellBorder = mSettings->value(QLatin1String("ShowCellBorder"), true).toBool();
     mTheme = mSettings->value(QLatin1String("Theme"), QLatin1String("Default")).toString();
+    mStyleMode = mSettings->value(QLatin1String("StyleMode"), QLatin1String("fusion")).toString();
+    if (mStyleMode.isEmpty())
+        mStyleMode = defaultStyleMode();
     mGridOpacity = mSettings->value(QLatin1String("GridOpacity"), 128).toInt();
     mGridWidth = mSettings->value(QLatin1String("GridWidth"), 128).toInt();
 #endif
@@ -232,6 +237,36 @@ void Preferences::setGridWidth(int newWidth)
     mGridWidth = newWidth;
     mSettings->setValue(QLatin1String("GridWidth"), mGridWidth);
     emit gridWidthChanged(mGridWidth);
+}
+
+QString findStyleKey(const QString &name)
+{
+    const QStringList keys = QStyleFactory::keys();
+    for (const QString &key : keys) {
+        if (key.compare(name, Qt::CaseInsensitive) == 0)
+            return key;
+    }
+    return QString();
+}
+
+QString defaultStyleMode()
+{
+    const QString fusion = findStyleKey(QLatin1String("fusion"));
+    if (!fusion.isEmpty())
+        return fusion;
+
+    if (qApp && qApp->style() && !qApp->style()->objectName().isEmpty())
+        return qApp->style()->objectName();
+
+    const QString windowsVista = findStyleKey(QLatin1String("windowsvista"));
+    if (!windowsVista.isEmpty())
+        return windowsVista;
+
+    const QString windows = findStyleKey(QLatin1String("windows"));
+    if (!windows.isEmpty())
+        return windows;
+
+    return QString();
 }
 
 void Preferences::setHighlightCurrentLayer(bool highlight)
@@ -728,9 +763,30 @@ void Preferences::setTheme(const QString &theme)
     applyTheme();
 }
 
-void Preferences::applyTheme() const
+void Preferences::setStyleMode(const QString &styleMode)
+{
+    if (mStyleMode.compare(styleMode, Qt::CaseInsensitive) == 0)
+        return;
+
+    mStyleMode = styleMode;
+    applyTheme();
+}
+
+void Preferences::applyTheme()
 {
     mSettings->setValue(QLatin1String("Interface/Theme"), mTheme);
+    mSettings->setValue(QLatin1String("Interface/StyleMode"), mStyleMode);
+
+    QString styleKey = findStyleKey(mStyleMode);
+    if (styleKey.isEmpty()) {
+        styleKey = defaultStyleMode();
+        mStyleMode = styleKey;
+    }
+    if (!styleKey.isEmpty()) {
+        if (QStyle *style = QStyleFactory::create(styleKey))
+            qApp->setStyle(style);
+    }
+
     if (mTheme == QStringLiteral("Default")) {
         qApp->setStyleSheet(QString());
         return;
