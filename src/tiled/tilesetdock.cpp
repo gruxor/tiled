@@ -1252,8 +1252,18 @@ void TilesetDock::tilesetChanged(Tileset *tileset)
 
     if (mTilesets.contains(tileset)) {
         int row = mTilesets.indexOf(tileset);
-        if (QListWidgetItem *item = mTilesetNamesView->item(row))
+        if (QListWidgetItem* item = mTilesetNamesView->item(row))
+        {
             item->setForeground(tileset->isMissing() ? Qt::red : QBrush());
+
+            if (mMapDocument->map()->isTilesetUsed(tileset) && !tileset->isMissing()) {
+                item->setForeground(Qt::darkGreen);
+            }
+            else if (mMapDocument->map()->isTilesetUsed(tileset) && tileset->isMissing())
+            {
+                item->setForeground(Qt::darkYellow);
+            }
+        }
     }
 }
 
@@ -1600,9 +1610,29 @@ void TilesetDock::setTilesetNamesList()
 #endif
         for (Tileset *ts : mTilesets) {
             QListWidgetItem *item = new QListWidgetItem(ts->name());
-            if (ts->isMissing())
-                item->setForeground(Qt::red);
+            if (ts->isMissing()) {
+                item->setForeground(mMapDocument->map()->isTilesetUsed(ts) ? Qt::darkYellow : Qt::red);
+            } else if (mMapDocument->map()->isTilesetUsed(ts)) {
+                item->setForeground(Qt::darkGreen);
+            }
             item->setFlags(item->flags() | Qt::ItemIsEditable);
+
+            QString path = ts->imageSource2x();
+            QFileInfo fileInfo(path);
+            QString lastFolder = fileInfo.dir().dirName();
+            item->setToolTip(ts->imageSource2x());
+            if (lastFolder == QLatin1String("2x"))
+            {
+                item->setIcon(QIcon(QLatin1String(":images/2x.png")));
+            }
+            else if (lastFolder == QLatin1String("."))
+            {
+                item->setIcon(QIcon(QLatin1String(":images/1x.png")));
+            }
+            else {
+                item->setIcon(QIcon(QLatin1String(":images/custom.png")));
+            }
+
             mTilesetNamesView->addItem(item);
 #ifdef TILESET_LIST_FIXED_WIDTH
             maxWidth = qMax(maxWidth, fm.horizontalAdvance(ts->name()));

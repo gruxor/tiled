@@ -1064,7 +1064,9 @@ void TileDefDialog::tileEntered(const QModelIndex &index)
         TileDefTile *defTile1 = mSelectedTiles.first();
         TileDefTile *defTile2 = static_cast<TileDefTile*>(ui->tiles->model()->userDataAt(index)); // danger!
         int offset = defTile2->id() - defTile1->id();
+        QString tileName = defTile->tileset()->mName + QStringLiteral("_") + QString::fromLatin1("%1").arg(defTile->id());
         ui->tileOffset->setText(tr("Offset: %1").arg(offset));
+        ui->lbl_TileName->setText(tileName);
         return;
     }
     ui->tileOffset->setText(tr("Offset: ?"));

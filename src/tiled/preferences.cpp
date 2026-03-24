@@ -56,7 +56,8 @@ void Preferences::deleteInstance()
 }
 
 Preferences::Preferences()
-    : mSettings(new QSettings)
+: QObject()
+    , mSettings(new QSettings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat))
 {
     // Retrieve storage settings
     mSettings->beginGroup(QLatin1String("Storage"));
@@ -97,8 +98,10 @@ Preferences::Preferences()
     mShowAdjacentMaps = mSettings->value(QLatin1String("ShowAdjacentMaps"), true).toBool();
     mHighlightRoomUnderPointer = mSettings->value(QLatin1String("HighlightRoomUnderPointer"), false).toBool();
     mTilesetBackgroundColor = QColor(mSettings->value(QLatin1String("TilesetBackgroundColor"), QColor(Qt::white).name()).toString());
-    mShowCellBorder = mSettings->value(QLatin1String("ShowCelLBorder"), true).toBool();
+    mShowCellBorder = mSettings->value(QLatin1String("ShowCellBorder"), true).toBool();
     mTheme = mSettings->value(QLatin1String("Theme"), QLatin1String("Default")).toString();
+    mGridOpacity = mSettings->value(QLatin1String("GridOpacity"), 128).toInt();
+    mGridWidth = mSettings->value(QLatin1String("GridWidth"), 128).toInt();
 #endif
     mSettings->endGroup();
 #ifdef ZOMBOID
@@ -124,8 +127,7 @@ Preferences::Preferences()
 
 #ifdef ZOMBOID
     QSettings settings(QLatin1String("TheIndieStone"), QLatin1String("BuildingEd"));
-    QString KEY_TILES_DIR = QLatin1String("TilesDirectory");
-    QString tilesDirectory = settings.value(KEY_TILES_DIR).toString();
+    QString tilesDirectory = mSettings->value(QLatin1String("TilesDirectory")).toString();
     if (tilesDirectory.isEmpty() || !QDir(tilesDirectory).exists()) {
         tilesDirectory = QCoreApplication::applicationDirPath() +
                 QLatin1Char('/') + QLatin1String("../Tiles");
@@ -143,14 +145,13 @@ Preferences::Preferences()
     mSettings->endGroup();
     if (tilesDirectory.length()) {
         mSettings->setValue(QLatin1String("Tilesets/TilesDirectory"), mTilesDirectory);
-        mSettings->remove(KEY_TILES_DIR);
     }
 
     mSettings->beginGroup(QLatin1String("MapsDirectory"));
     mMapsDirectory = mSettings->value(QLatin1String("Current"), QString()).toString();
     mSettings->endGroup();
 
-    QString configPath = QDir::homePath() + QLatin1Char('/') + QLatin1String(".TileZed");
+    QString configPath = QDir::currentPath() + QLatin1String(".TileZed");
     mConfigDirectory = mSettings->value(QLatin1String("ConfigDirectory"),
                                         configPath).toString();
 
@@ -177,6 +178,7 @@ Preferences::Preferences()
     TilesetManager *tilesetManager = TilesetManager::instance();
     tilesetManager->setReloadTilesetsOnChange(mReloadTilesetsOnChange);
 #endif
+    mSettings->sync();
 }
 
 Preferences::~Preferences()
@@ -212,6 +214,24 @@ void Preferences::setGridColor(QColor gridColor)
     mGridColor = gridColor;
     mSettings->setValue(QLatin1String("Interface/GridColor"), mGridColor.name());
     emit gridColorChanged(mGridColor);
+}
+
+void Preferences::setGridOpacity(int newOpacity)
+{
+    if (mGridOpacity == newOpacity)
+        return;
+    mGridOpacity = newOpacity;
+    mSettings->setValue(QLatin1String("GridOpacity"), mGridOpacity);
+    emit gridOpacityChanged(mGridOpacity);
+}
+
+void Preferences::setGridWidth(int newWidth)
+{
+    if (mGridWidth == newWidth)
+        return;
+    mGridWidth = newWidth;
+    mSettings->setValue(QLatin1String("GridWidth"), mGridWidth);
+    emit gridWidthChanged(mGridWidth);
 }
 
 void Preferences::setHighlightCurrentLayer(bool highlight)

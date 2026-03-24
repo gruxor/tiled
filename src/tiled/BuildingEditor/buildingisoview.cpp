@@ -149,7 +149,7 @@ QRectF TileModeGridItem::boundingRect() const
 void TileModeGridItem::paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *)
 {
     mRenderer->drawGrid(p, option->exposedRect, BuildingPreferences::instance()->gridColor(),
-                        mDocument->currentLevel(), mTileBounds);
+                        mDocument->currentLevel(), 128, 1, mTileBounds);
 }
 
 void TileModeGridItem::setEditingTiles(bool editing)

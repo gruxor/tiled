@@ -160,6 +160,11 @@ public:
 
     void applyTheme() const;
 
+    int gridOpacity() const
+    { return mGridOpacity; }
+
+    int gridWidth() const
+    { return mGridWidth; }
 #endif // ZOMBOID
 
     /**
@@ -193,6 +198,8 @@ public slots:
     void setThumbnailsDirectory(const QString &path);
     void setShowCellBorder(bool show);
     void setTheme(const QString &theme);
+    void setGridOpacity(int newOpacity);
+    void setGridWidth(int newWidth);
 #endif
 
 signals:
@@ -227,6 +234,8 @@ signals:
     void tilesetBackgroundColorChanged(const QColor &color);
     void thumbnailsDirectoryChanged(const QString &dir);
     void showCellBorderChanged(bool show);
+    void gridOpacityChanged(int newOpacity);
+    void gridWidthChanged(int newWidth);
 #endif
 
 private:
@@ -273,6 +282,8 @@ private:
     bool mShowInvisibleTiles;
     bool mShowCellBorder;
     QString mTheme;
+    int mGridOpacity;
+    int mGridWidth;
 #endif
 
     static Preferences *mInstance;

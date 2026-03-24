@@ -19,6 +19,7 @@
 #include "ui_configdialog.h"
 
 #include <QFileDialog>
+#include <QDir>
 #include <QSettings>
 
 static QString KEY_CONFIG_DIR = QLatin1String("ConfigDirectory");
@@ -29,8 +30,10 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QSettings settings;
-    QString defaultPath = QDir::homePath() + QLatin1Char('/') + QLatin1String(".TileZed");
+    // Utiliser le fichier settings.ini
+    QSettings settings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
+
+    QString defaultPath = QDir::currentPath() + QLatin1String("/../") + QLatin1String(".TileZed");
     QString configPath = settings.value(KEY_CONFIG_DIR, defaultPath).toString();
     ui->configDirectory->setText(configPath);
 
@@ -53,7 +56,7 @@ void ConfigDialog::configBrowse()
 
 void ConfigDialog::accept()
 {
-    QSettings settings;
+    QSettings settings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
     settings.setValue(KEY_CONFIG_DIR, ui->configDirectory->text());
     QDialog::accept();
 }

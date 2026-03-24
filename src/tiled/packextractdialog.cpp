@@ -25,6 +25,10 @@ PackExtractDialog::PackExtractDialog(PackFile &packFile, QWidget *parent) :
     ui->radioSingle->setChecked(false);
     ui->checkBox2x->setChecked(true);
     ui->checkBox2x->setEnabled(ui->radioSingle->isChecked());
+    ui->checkBoxWWO->setEnabled(true);
+    ui->checkBoxWWO->setChecked(true);
+    ui->checkBoxMultiTileSheets->setChecked(false);
+    ui->checkBoxMultiTileSheets->setEnabled(true);
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("PackExtractDialog"));

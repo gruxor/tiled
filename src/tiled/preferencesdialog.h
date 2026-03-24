@@ -78,6 +78,9 @@ private slots:
     void lowerPropertiesFile();
     void themeChanged(int index);
     void updateActions();
+    void browseTilesDirectory();
+    void defaultGridOpacity();
+    void defaultGridWidth();
 #endif // ZOMBOID
 
 private:

@@ -53,12 +53,16 @@ void BuildingPreferences::deleteInstance()
 
 BuildingPreferences::BuildingPreferences(QObject *parent) :
     QObject(parent),
-    mSettings(QLatin1String("TheIndieStone"), QLatin1String("BuildingEd"))
+    mSettings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat)
 {
+    if (!mSettings.contains(QLatin1String(KEY_MAPS_DIRECTORY))) {
+        mSettings.setValue(QLatin1String(KEY_MAPS_DIRECTORY),
+                           Tiled::Internal::Preferences::instance()->mapsDirectory());
+    }
     mMapsDirectory = mSettings.value(QLatin1String(KEY_MAPS_DIRECTORY),
                                      Tiled::Internal::Preferences::instance()->mapsDirectory()).toString();
     mShowGrid = mSettings.value(QLatin1String(KEY_SHOW_GRID), true).toBool();
-    mGridColor = mSettings.value(QLatin1String(KEY_GRID_COLOR), QColor(Qt::black).name()).toString();
+    mGridColor = QColor(mSettings.value(QLatin1String(KEY_GRID_COLOR), QColor(Qt::black).name()).toString());
     mHighlightFloor = mSettings.value(QLatin1String(KEY_HIGHLIGHT_FLOOR),
                                       true).toBool();
     mHighlightRoom = mSettings.value(QLatin1String(KEY_HIGHLIGHT_ROOM),

@@ -117,7 +117,7 @@ BuildingTilesMgr::BuildingTilesMgr() :
     mMissingTile = TilesetManager::instance()->missingTile();
 
     Tileset *tileset = new Tileset(QLatin1String("none"), 64, 128);
-    tileset->setTransparentColor(Qt::white);
+    //tileset->setTransparentColor(Qt::white);
     QString fileName = QLatin1String(":/BuildingEditor/icons/none-tile.png");
     if (tileset->loadFromImage(QImage(fileName), fileName))
         mNoneTiledTile = tileset->tileAt(0);

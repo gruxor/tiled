@@ -112,6 +112,9 @@ void LayersPanelDelegate::paint(QPainter *painter,
 
     // Draw the tile image
     if (tile != 0) {
+        QString tileName = QFileInfo(tile->tileset()->imageSource()).baseName() + QLatin1Char('_') + QString::number(m->tileAt(index)->id());
+        QString tileId = QLatin1Char('_') + QString::number(m->tileAt(index)->id());
+
         const QVariant display = index.model()->data(index, Qt::DisplayRole);
         const QPixmap tileImage = QPixmap::fromImage(tile->image()); //display.value<QPixmap>();
         const int tileWidth = qCeil(tile->tileset()->tileWidth() * mView->zoomable()->scale());
@@ -125,6 +128,8 @@ void LayersPanelDelegate::paint(QPainter *painter,
                                                  -(dw - dw/2), -extra)
                             .adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom()),
                             tileImage);
+        painter->drawText(option.rect.left(), option.rect.top() + labelHeight,
+                    option.rect.width(), labelHeight, Qt::AlignHCenter, tileName);
     }
 #if 0
     // Overlay with highlight color when selected
@@ -607,6 +612,7 @@ TileLayersPanel::TileLayersPanel(QWidget *parent) :
     mCurrentLevel(-1),
     mCurrentLayerIndex(-1)
 {
+    mView->setObjectName(QLatin1String("layersPanelView"));
     mView->zoomable()->setScale(0.25);
 
     QComboBox *scaleCombo = new QComboBox;
