@@ -50,6 +50,18 @@ using namespace Tiled::Internal;
 namespace Tiled {
 namespace Internal {
 
+static QBrush layerBackgroundBrush(const QPalette &palette, bool visible)
+{
+    return visible ? palette.brush(QPalette::Window)
+                   : palette.brush(QPalette::AlternateBase);
+}
+
+static QColor layerTextColor(const QPalette &palette, bool visible)
+{
+    return visible ? palette.color(QPalette::WindowText)
+                   : palette.color(QPalette::Disabled, QPalette::WindowText);
+}
+
 class LayersPanelDelegate : public QAbstractItemDelegate
 {
 public:
@@ -90,7 +102,7 @@ void LayersPanelDelegate::paint(QPainter *painter,
 
     bool prevRowSelected = index.row() > 0 && mView->selectionModel()->isRowSelected(index.row() - 1);
     if (index.row() > 0 && !(option.state & QStyle::State_Selected) && !prevRowSelected) {
-        painter->setPen(Qt::darkGray);
+        painter->setPen(option.palette.color(QPalette::Mid));
         painter->drawLine(option.rect.topLeft(), option.rect.topRight());
         painter->setPen(oldPen);
     }
@@ -128,6 +140,7 @@ void LayersPanelDelegate::paint(QPainter *painter,
                                                  -(dw - dw/2), -extra)
                             .adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom()),
                             tileImage);
+        painter->setPen(layerTextColor(option.palette, true));
         painter->drawText(option.rect.left(), option.rect.top() + labelHeight,
                     option.rect.width(), labelHeight, Qt::AlignHCenter, tileName);
     }
@@ -178,12 +191,10 @@ void LayersPanelDelegate::paint(QPainter *painter,
         newFont.setUnderline(true);
         painter->setFont(newFont);
     }
-    if (!tile)
-        painter->setPen(option.palette.color(QPalette::Disabled, QPalette::Text));
+    painter->setPen(layerTextColor(option.palette, tile != nullptr));
     painter->drawText(option.rect.left(), option.rect.top() + 2,
                       option.rect.width(), labelHeight, Qt::AlignHCenter, name);
-    if (!tile)
-        painter->setPen(oldPen);
+    painter->setPen(oldPen);
     if (mMouseOverIndex == index)
         painter->setFont(oldFont);
 
@@ -735,7 +746,7 @@ void TileLayersPanel::setList()
         int layerIndex = mDocument->map()->layers().indexOf(tl);
         mView->prependLayer(layerName, tile, layerIndex);
 
-        QBrush brush(tl->isVisible() ? palette().color(QPalette::Window) : Qt::lightGray);
+        QBrush brush = layerBackgroundBrush(palette(), tl->isVisible());
         mView->model()->setData(mView->model()->index(layerIndex), brush, Qt::BackgroundRole);
         ++index;
     }
@@ -821,7 +832,7 @@ void TileLayersPanel::layerChanged(int index)
         if (mi.isValid()) {
             QString name = MapComposite::layerNameWithoutPrefix(layer);
             mView->model()->setData(mi, name, Qt::DecorationRole);
-            QBrush brush(layer->isVisible() ? palette().color(QPalette::Window) : Qt::lightGray);
+            QBrush brush = layerBackgroundBrush(palette(), layer->isVisible());
             mView->model()->setData(mi, brush, Qt::BackgroundRole);
         }
     }

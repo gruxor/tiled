@@ -33,7 +33,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     // Utiliser le fichier settings.ini
     QSettings settings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
 
-    QString defaultPath = QDir::currentPath() + QLatin1String("/../") + QLatin1String(".TileZed");
+    QString defaultPath = QDir::currentPath() + QLatin1String("/.TileZed");
     QString configPath = settings.value(KEY_CONFIG_DIR, defaultPath).toString();
     ui->configDirectory->setText(configPath);
 

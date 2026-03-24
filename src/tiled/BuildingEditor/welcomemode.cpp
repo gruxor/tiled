@@ -31,6 +31,7 @@
 #include "mapimagemanager.h"
 #include "preferences.h"
 
+#include <QApplication>
 #include <QCompleter>
 #include <QDebug>
 #include <QFileDialog>
@@ -55,14 +56,16 @@ LinkItem::LinkItem(const QString &text1, const QString &text2, QGraphicsItem *pa
     QGraphicsItem(parent),
     mRemoveItem(0)
 {
+    const QPalette pal = QApplication::palette();
+
     QGraphicsRectItem *bg = new QGraphicsRectItem(this);
-    bg->setBrush(QColor(QLatin1String("#f3f3f3")));
+    bg->setBrush(pal.brush(QPalette::AlternateBase));
     bg->setPen(Qt::NoPen);
     bg->setVisible(false);
 
     QGraphicsTextItem *item1 = new QGraphicsTextItem(this);
     item1->setPlainText(text1);
-    item1->setDefaultTextColor(Qt::blue);
+    item1->setDefaultTextColor(pal.color(QPalette::Link));
 
     mBoundingRect = sceneRectOfItem(item1);
 
@@ -70,7 +73,7 @@ LinkItem::LinkItem(const QString &text1, const QString &text2, QGraphicsItem *pa
         QGraphicsTextItem *item2 = new QGraphicsTextItem(this);
         QString s = QFontMetrics(item2->font()).elidedText(text2, Qt::ElideRight, 400 - 40);
         item2->setPlainText(s);
-        item2->setDefaultTextColor(QColor("#6b6b6b"));
+        item2->setDefaultTextColor(pal.color(QPalette::Mid));
         item2->setPos(0, item1->boundingRect().height());
 
         mFilePath = text2;
@@ -136,8 +139,10 @@ void LinkItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 
 void LinkItem::allowRemove()
 {
+    const QPalette pal = QApplication::palette();
+
     QGraphicsRectItem *bg = new QGraphicsRectItem(this);
-    bg->setBrush(QColor(QLatin1String("#e0e0e0")));
+    bg->setBrush(pal.brush(QPalette::Midlight));
     bg->setPen(Qt::NoPen);
     bg->setRect(mBoundingRect.adjusted(mBoundingRect.right() - 32, 0, 0, 0));
     bg->setVisible(false);
@@ -163,7 +168,8 @@ WelcomeMode::WelcomeMode(QObject *parent) :
     mWidget->setObjectName(QLatin1String("WelcomeModeWidget"));
     ui->setupUi(mWidget);
 
-    ui->graphicsView->setBackgroundBrush(Qt::gray);
+    const QPalette pal = mWidget->palette();
+    ui->graphicsView->setBackgroundBrush(pal.brush(QPalette::Window));
 
     QGraphicsScene *scene = new QGraphicsScene(ui->graphicsView);
     ui->graphicsView->setScene(scene);
@@ -176,11 +182,12 @@ WelcomeMode::WelcomeMode(QObject *parent) :
 //    QGraphicsPixmapItem *pitem = scene->addPixmap(QPixmap::fromImage(QImage(QLatin1String(":/images/tiled-icon-32.png"))));
     pitem->setPos(x, y + 4);
     QGraphicsTextItem *item = scene->addText(tr("BuildingEd"), QFont(QLatin1String("Helvetica"), 16, 1));
+    item->setDefaultTextColor(pal.color(QPalette::Text));
     item->setPos(x + 24 + 6, y);
     QRectF r = sceneRectOfItem(item) | sceneRectOfItem(pitem);
     r.translate(0, 12);
     QGraphicsLineItem *line = scene->addLine(r.left(), r.bottom(), 400, r.bottom());
-    line->setPen(QPen(Qt::gray));
+    line->setPen(QPen(pal.color(QPalette::Mid)));
 
     x = 40;
     y = r.bottom() + 16;
@@ -202,6 +209,7 @@ WelcomeMode::WelcomeMode(QObject *parent) :
 
 //    y += 36;
     item = scene->addText(tr("Recent Buildings"), QFont(QLatin1String("Helvetica"), 16, 1));
+    item->setDefaultTextColor(pal.color(QPalette::Text));
     item->setPos(x, y);
 
     y += item->boundingRect().height() + 12;
@@ -213,6 +221,7 @@ WelcomeMode::WelcomeMode(QObject *parent) :
     setAutoSaveFiles();
     if (!mAutoSaveItems.isEmpty()) {
         QGraphicsTextItem *item2 = scene->addText(tr("Restore Autosave"), QFont(QLatin1String("Helvetica"), 16, 1));
+        item2->setDefaultTextColor(pal.color(QPalette::Text));
         item2->setPos(400 + 48, sceneRectOfItem(item).y());
     }
 

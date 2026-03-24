@@ -36,7 +36,7 @@ public:
     { return mFileName; }
     void setFile(const QString &fileName);
 
-    void write(const QString &s, QColor color = Qt::black);
+    void write(const QString &s, QColor color = QColor());
 
     // These are the luai_write* implementations!
     void writestring(const char *s, int len);

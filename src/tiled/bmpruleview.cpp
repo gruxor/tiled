@@ -190,7 +190,10 @@ void BmpRuleDelegate::paint(QPainter *painter,
     QFont font = painter->font();
     if (rule->label.size()) {
         QPen oldPen = painter->pen();
-        painter->setPen(rule->obsolete ? Qt::gray : Qt::blue);
+        const QColor labelColor = rule->obsolete
+            ? option.palette.color(QPalette::Disabled, QPalette::Text)
+            : option.palette.color(QPalette::Link);
+        painter->setPen(labelColor);
         painter->setFont(mLabelFont);
         labelWidth = mLabelFontMetrics.horizontalAdvance(rule->label) + 6;
         painter->drawText(option.rect.left() + extra, option.rect.top() + extra,

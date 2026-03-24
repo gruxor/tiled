@@ -28,9 +28,12 @@
 
 #include <QColorDialog>
 #include <QFileDialog>
+#include <QGuiApplication>
 #include <QMessageBox>
 #include <QPainter>
+#include <QScreen>
 #include <QStyledItemDelegate>
+#include <QTabBar>
 #include <QDir>
 #include <QHeaderView>
 #include <QStyleFactory>
@@ -105,6 +108,17 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
 {
     mUi->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    mUi->tabWidget->setUsesScrollButtons(true);
+    mUi->tabWidget->tabBar()->setElideMode(Qt::ElideRight);
+
+    QSize initialSize = sizeHint();
+    if (QScreen *screen = QGuiApplication::primaryScreen()) {
+        const QRect availableGeometry = screen->availableGeometry();
+        const QSize maxDefaultSize(availableGeometry.width() * 0.50,
+                                   availableGeometry.height() * 0.50);
+        initialSize = initialSize.boundedTo(maxDefaultSize);
+    }
+    resize(initialSize);
 
 #ifndef QT_NO_OPENGL
     mUi->openGL->setEnabled(true/*QGLFormat::hasOpenGL()*/);
@@ -559,6 +573,9 @@ void PreferencesDialog::fromPreferences()
 
 #ifdef ZOMBOID
     mUi->bgColor->setColor(prefs->backgroundColor());
+    mUi->tilesDirectory->setText(QDir::toNativeSeparators(prefs->tilesDirectory()));
+    mUi->gridWidth->setValue(prefs->gridWidth());
+    mUi->gridOpacity->setValue(prefs->gridOpacity());
     mUi->configDirectory->setText(QDir::toNativeSeparators(prefs->configPath()));
     mUi->thumbnailEdit->setText(QDir::toNativeSeparators(prefs->thumbnailsDirectory()));
 

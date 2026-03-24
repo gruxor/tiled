@@ -188,7 +188,7 @@ void BmpBlendDelegate::paint(QPainter *painter,
     QString label = blends[0] ? blends[0]->mainTile : QString();
     if (label.length()) {
         QPen oldPen = painter->pen();
-        painter->setPen(Qt::blue);
+        painter->setPen(option.palette.color(QPalette::Link));
         painter->setFont(mLabelFont);
         // labelWidth = mLabelFontMetrics.horizontalAdvance(label) + 6;
         painter->drawText(option.rect.left() + extra, option.rect.top() + extra,

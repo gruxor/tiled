@@ -42,6 +42,9 @@
 using namespace Tiled;
 using namespace Tiled::Internal;
 
+QString findStyleKey(const QString &name);
+QString defaultStyleMode();
+
 Preferences *Preferences::mInstance = 0;
 
 Preferences *Preferences::instance()
@@ -106,7 +109,7 @@ Preferences::Preferences()
     if (mStyleMode.isEmpty())
         mStyleMode = defaultStyleMode();
     mGridOpacity = mSettings->value(QLatin1String("GridOpacity"), 128).toInt();
-    mGridWidth = mSettings->value(QLatin1String("GridWidth"), 128).toInt();
+    mGridWidth = mSettings->value(QLatin1String("GridWidth"), 1).toInt();
 #endif
     mSettings->endGroup();
 #ifdef ZOMBOID
@@ -156,7 +159,7 @@ Preferences::Preferences()
     mMapsDirectory = mSettings->value(QLatin1String("Current"), QString()).toString();
     mSettings->endGroup();
 
-    QString configPath = QDir::currentPath() + QLatin1String(".TileZed");
+    QString configPath = QDir::currentPath() + QLatin1String("/.TileZed");
     mConfigDirectory = mSettings->value(QLatin1String("ConfigDirectory"),
                                         configPath).toString();
 
@@ -226,7 +229,7 @@ void Preferences::setGridOpacity(int newOpacity)
     if (mGridOpacity == newOpacity)
         return;
     mGridOpacity = newOpacity;
-    mSettings->setValue(QLatin1String("GridOpacity"), mGridOpacity);
+    mSettings->setValue(QLatin1String("Interface/GridOpacity"), mGridOpacity);
     emit gridOpacityChanged(mGridOpacity);
 }
 
@@ -235,7 +238,7 @@ void Preferences::setGridWidth(int newWidth)
     if (mGridWidth == newWidth)
         return;
     mGridWidth = newWidth;
-    mSettings->setValue(QLatin1String("GridWidth"), mGridWidth);
+    mSettings->setValue(QLatin1String("Interface/GridWidth"), mGridWidth);
     emit gridWidthChanged(mGridWidth);
 }
 
@@ -453,7 +456,7 @@ void Preferences::setAutomappingDrawing(bool enabled)
 #ifdef ZOMBOID
 QString Preferences::userPath() const
 {
-    QString userPath = QDir::homePath() + QLatin1Char('/') + QLatin1String(".TileZed");
+    QString userPath = QDir::currentPath() + QLatin1String("/.TileZed");
     return userPath;
 }
 

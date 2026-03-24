@@ -135,6 +135,7 @@
 #include <QMimeData>
 #include <QScrollBar>
 #include <QSessionManager>
+#include <QSpinBox>
 #include <QTextStream>
 #include <QUndoGroup>
 #include <QUndoStack>
@@ -180,8 +181,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 #ifdef ZOMBOID
     , mTileLayersPanel(new TileLayersPanel())
     , mMainSplitter(new QSplitter(this))
-    , mCurrentLevelMenu(new QMenu(this))
-    , mCurrentLevelButton(new QToolButton(this))
+    , mCurrentLevelLabel(new QLabel(this))
+    , mCurrentLevelMinusTen(new QToolButton(this))
+    , mCurrentLevelMinusOne(new QToolButton(this))
+    , mCurrentLevelSpinBox(new QSpinBox(this))
+    , mCurrentLevelPlusOne(new QToolButton(this))
+    , mCurrentLevelPlusTen(new QToolButton(this))
     , mCurrentLayerMenu(new QMenu(this))
     , mCurrentLayerButton(new QToolButton(this))
 #else
@@ -624,17 +629,38 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
     connect(toolManager, &ToolManager::statusInfoChanged,
             this, &MainWindow::updateStatusInfoLabel);
 #ifdef ZOMBOID
-    mCurrentLevelButton->setObjectName(QLatin1String("currentLevelButton"));
+    mCurrentLevelLabel->setObjectName(QLatin1String("currentLevelLabel"));
+    mCurrentLevelLabel->setText(tr("Level:"));
+    mCurrentLevelSpinBox->setObjectName(QLatin1String("currentLevelSpinBox"));
+    mCurrentLevelSpinBox->setAlignment(Qt::AlignCenter);
+    mCurrentLevelSpinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    auto setupLevelButton = [](QToolButton *btn, const QString &text) {
+        btn->setText(text);
+        btn->setAutoRepeat(true);
+        btn->setAutoRepeatDelay(400);
+        btn->setAutoRepeatInterval(80);
+    };
+    setupLevelButton(mCurrentLevelMinusTen, QLatin1String("-10"));
+    setupLevelButton(mCurrentLevelMinusOne, QLatin1String("-1"));
+    setupLevelButton(mCurrentLevelPlusOne,  QLatin1String("+1"));
+    setupLevelButton(mCurrentLevelPlusTen,  QLatin1String("+10"));
+    connect(mCurrentLevelMinusTen, &QToolButton::clicked, this, [this]{ mCurrentLevelSpinBox->setValue(mCurrentLevelSpinBox->value() - 10); });
+    connect(mCurrentLevelMinusOne, &QToolButton::clicked, this, [this]{ mCurrentLevelSpinBox->setValue(mCurrentLevelSpinBox->value() - 1); });
+    connect(mCurrentLevelPlusOne,  &QToolButton::clicked, this, [this]{ mCurrentLevelSpinBox->setValue(mCurrentLevelSpinBox->value() + 1); });
+    connect(mCurrentLevelPlusTen,  &QToolButton::clicked, this, [this]{ mCurrentLevelSpinBox->setValue(mCurrentLevelSpinBox->value() + 10); });
     mCurrentLayerButton->setObjectName(QLatin1String("currentLayerButton"));
-    connect(mCurrentLevelMenu, &QMenu::aboutToShow, this, &MainWindow::aboutToShowLevelMenu);
     connect(mCurrentLayerMenu, &QMenu::aboutToShow, this, &MainWindow::aboutToShowLayerMenu);
-    connect(mCurrentLevelMenu, &QMenu::triggered, this, &MainWindow::triggeredLevelMenu);
+    connect(mCurrentLevelSpinBox, qOverload<int>(&QSpinBox::valueChanged),
+            this, &MainWindow::triggeredLevelSpinBox);
     connect(mCurrentLayerMenu, &QMenu::triggered, this, &MainWindow::triggeredLayerMenu);
-    mCurrentLevelButton->setMenu(mCurrentLevelMenu);
     mCurrentLayerButton->setMenu(mCurrentLayerMenu);
-    mCurrentLevelButton->setPopupMode(QToolButton::InstantPopup);
     mCurrentLayerButton->setPopupMode(QToolButton::InstantPopup);
-    statusBarLayout->addWidget(mCurrentLevelButton);
+    statusBarLayout->addWidget(mCurrentLevelLabel);
+    statusBarLayout->addWidget(mCurrentLevelMinusTen);
+    statusBarLayout->addWidget(mCurrentLevelMinusOne);
+    statusBarLayout->addWidget(mCurrentLevelSpinBox);
+    statusBarLayout->addWidget(mCurrentLevelPlusOne);
+    statusBarLayout->addWidget(mCurrentLevelPlusTen);
     statusBarLayout->addWidget(mCurrentLayerButton);
     statusBarLayout->addStretch();
     mZoomComboBox->setObjectName(QLatin1String("zoomComboBox"));
@@ -3011,11 +3037,18 @@ void MainWindow::updateActions()
     Layer *layer = mMapDocument ? mMapDocument->currentLayer() : nullptr;
 #ifdef ZOMBOID
     if (layer) {
-        mCurrentLevelButton->setEnabled(true);
+        mCurrentLevelSpinBox->setSpecialValueText(QString());
+        mCurrentLevelSpinBox->blockSignals(true);
+        mCurrentLevelSpinBox->setRange(mMapDocument->mapComposite()->minLevel(),
+                                       mMapDocument->mapComposite()->maxLevel());
+        mCurrentLevelSpinBox->setValue(layer->level());
+        mCurrentLevelSpinBox->blockSignals(false);
+        mCurrentLevelSpinBox->setEnabled(true);
+        mCurrentLevelMinusTen->setEnabled(true);
+        mCurrentLevelMinusOne->setEnabled(true);
+        mCurrentLevelPlusOne->setEnabled(true);
+        mCurrentLevelPlusTen->setEnabled(true);
         mCurrentLayerButton->setEnabled(true);
-        // The extra space at the end is deliberate so the toolbutton arrow
-        // doesn't overlap the text.
-        mCurrentLevelButton->setText(tr("Level: %1 ").arg(layer->level()));
         QString name = layer->name();
         if (name.isEmpty())
             name = tr("<no name>");
@@ -3023,13 +3056,31 @@ void MainWindow::updateActions()
             name = MapComposite::layerNameWithoutPrefix(name);
         mCurrentLayerButton->setText(tr("Layer: %1 ").arg(name));
     } else if ((mMapDocument != nullptr) && (mMapDocument->currentLevel() != INVALID_LEVEL)) {
-        mCurrentLevelButton->setText(tr("Level: %1 ").arg(mMapDocument->currentLevel()));
+        mCurrentLevelSpinBox->setSpecialValueText(QString());
+        mCurrentLevelSpinBox->blockSignals(true);
+        mCurrentLevelSpinBox->setRange(mMapDocument->mapComposite()->minLevel(),
+                                       mMapDocument->mapComposite()->maxLevel());
+        mCurrentLevelSpinBox->setValue(mMapDocument->currentLevel());
+        mCurrentLevelSpinBox->blockSignals(false);
+        mCurrentLevelSpinBox->setEnabled(true);
+        mCurrentLevelMinusTen->setEnabled(true);
+        mCurrentLevelMinusOne->setEnabled(true);
+        mCurrentLevelPlusOne->setEnabled(true);
+        mCurrentLevelPlusTen->setEnabled(true);
         mCurrentLayerButton->setText(tr("Layer: <none> "));
         mCurrentLayerButton->setEnabled(false);
     } else {
-        mCurrentLevelButton->setText(tr("Level: <none> "));
+        mCurrentLevelSpinBox->setRange(0, 0);
+        mCurrentLevelSpinBox->setSpecialValueText(tr("<none>"));
+        mCurrentLevelSpinBox->blockSignals(true);
+        mCurrentLevelSpinBox->setValue(0);
+        mCurrentLevelSpinBox->blockSignals(false);
         mCurrentLayerButton->setText(tr("Layer: <none> "));
-        mCurrentLevelButton->setEnabled(false);
+        mCurrentLevelSpinBox->setEnabled(false);
+        mCurrentLevelMinusTen->setEnabled(false);
+        mCurrentLevelMinusOne->setEnabled(false);
+        mCurrentLevelPlusOne->setEnabled(false);
+        mCurrentLevelPlusTen->setEnabled(false);
         mCurrentLayerButton->setEnabled(false);
     }
 #else
@@ -3087,25 +3138,6 @@ void MainWindow::resizeStatusInfoLabel()
     mStatusInfoLabel->setMinimumWidth(fm.horizontalAdvance(coordString) + 8);
 }
 
-void MainWindow::aboutToShowLevelMenu()
-{
-    if (!mMapDocument) return;
-    mCurrentLevelMenu->clear();
-    QStringList items;
-    MapComposite *mapComposite = mMapDocument->mapComposite();
-    for (int z = mapComposite->minLevel(); z <= mapComposite->maxLevel(); z++) {
-        items.prepend(QString::number(z));
-    }
-    foreach (QString item, items) {
-        QAction *action = mCurrentLevelMenu->addAction(item);
-        if (item.toInt() == mMapDocument->currentLevel()) {
-            action->setCheckable(true);
-            action->setChecked(true);
-            action->setEnabled(false);
-        }
-    }
-}
-
 void MainWindow::aboutToShowLayerMenu()
 {
     if (!mMapDocument) return;
@@ -3147,10 +3179,9 @@ void MainWindow::aboutToShowLayerMenu()
     }
 }
 
-void MainWindow::triggeredLevelMenu(QAction *action)
+void MainWindow::triggeredLevelSpinBox(int level)
 {
     if (!mMapDocument) return;
-    int level = action->text().toInt();
     if (MapLevel *mapLevel = mMapDocument->map()->mapLevelForZ(level)) {
         if (Layer *layer = mMapDocument->currentLayer()) {
             // Try to switch to a layer with the same name in the new level
@@ -3402,6 +3433,7 @@ void MainWindow::retranslateUi()
 
     mRandomButton->setToolTip(tr("Random Mode"));
     mLayerMenu->setTitle(tr("&Layer"));
+    mCurrentLevelLabel->setText(tr("Level:"));
     mActionHandler->retranslateUi();
 }
 

@@ -122,12 +122,19 @@ void LuaConsole::write(const QString &s, QColor color)
 {
     if (s.isEmpty()) return;
 
+    const QColor paletteText = ui->textEdit->palette().color(QPalette::Text);
+    QColor effectiveColor = color;
+    if (!effectiveColor.isValid() || effectiveColor == Qt::black)
+        effectiveColor = paletteText;
+    else if (effectiveColor == Qt::blue)
+        effectiveColor = ui->textEdit->palette().color(QPalette::Link);
+
     ui->textEdit->moveCursor(QTextCursor::End);
-    ui->textEdit->setTextColor(color);
+    ui->textEdit->setTextColor(effectiveColor);
     ui->textEdit->insertPlainText(s);
 
 //    ui->textEdit->moveCursor(QTextCursor::End);
-    ui->textEdit->setTextColor(Qt::black);
+    ui->textEdit->setTextColor(paletteText);
     ui->textEdit->insertPlainText(QLatin1String("\n"));
 }
 

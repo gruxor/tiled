@@ -32,6 +32,7 @@
 
 class QComboBox;
 class QLabel;
+class QSpinBox;
 class QToolButton;
 #ifdef ZOMBOID
 class QSplitter;
@@ -207,9 +208,8 @@ public slots:
     void updateZoomLabel();
 #ifdef ZOMBOID
     void resizeStatusInfoLabel();
-    void aboutToShowLevelMenu();
     void aboutToShowLayerMenu();
-    void triggeredLevelMenu(QAction *action);
+    void triggeredLevelSpinBox(int level);
     void triggeredLayerMenu(QAction *action);
 #endif
     void aboutTiled();
@@ -326,8 +326,12 @@ private:
 #ifdef ZOMBOID
     TileLayersPanel *mTileLayersPanel;
     QSplitter *mMainSplitter;
-    QMenu *mCurrentLevelMenu;
-    QToolButton *mCurrentLevelButton;
+    QLabel *mCurrentLevelLabel;
+    QToolButton *mCurrentLevelMinusTen;
+    QToolButton *mCurrentLevelMinusOne;
+    QSpinBox *mCurrentLevelSpinBox;
+    QToolButton *mCurrentLevelPlusOne;
+    QToolButton *mCurrentLevelPlusTen;
     QMenu *mCurrentLayerMenu;
     QToolButton *mCurrentLayerButton;
 #else
