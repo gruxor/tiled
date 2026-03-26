@@ -560,6 +560,15 @@ bool TileMetaInfoMgr::mergeTxt()
             for (auto& tileSource : tilesetSource->mTiles) {
                 userTileset->setTile(tileSource);
             }
+        } else {
+            // this section should hopefully fix a few reports of odd behavior with updated Tilesets.txt
+            TilesetsTxtFile::Tileset *newTileset = new TilesetsTxtFile::Tileset;
+            newTileset->mName = tilesetSource->mName;
+            newTileset->mFile = tilesetSource->mFile;
+            newTileset->mColumns = tilesetSource->mColumns;
+            newTileset->mRows = tilesetSource->mRows;
+            newTileset->mTiles = tilesetSource->mTiles;
+            userFileX.mTilesets += newTileset;
         }
     }
 
