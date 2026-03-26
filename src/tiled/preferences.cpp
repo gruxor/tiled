@@ -790,21 +790,28 @@ void Preferences::applyTheme()
             qApp->setStyle(style);
     }
 
-    if (mTheme == QStringLiteral("Default")) {
-        qApp->setStyleSheet(QString());
-        return;
-    }
     QString resource;
+    QString filePath;
     if (mTheme == QStringLiteral("Breeze (Dark)")) {
         resource = QStringLiteral(":breeze/dark/stylesheet.qss");
     } else if (mTheme == QStringLiteral("QDarkStyle (Dark)")) {
         resource = QStringLiteral(":qdarkstyle/dark/darkstyle.qss");
     } else if (mTheme == QStringLiteral("QDarkStyle (Light)")) {
         resource = QStringLiteral(":qdarkstyle/light/lightstyle.qss");
+    } else if (mTheme == QStringLiteral("Combinear")) {
+        filePath = QDir::currentPath() + QLatin1String("/theme/Combinear.qss");
+    } else if (mTheme == QStringLiteral("Dane")) {
+        filePath = QDir::currentPath() + QLatin1String("/theme/Dane.qss");
     } else {
         return;
     }
-    QFile theme_file(resource);
+
+    QFile theme_file;
+    if (!resource.isEmpty())
+        theme_file.setFileName(resource);
+    else
+        theme_file.setFileName(filePath);
+    
     theme_file.open(QFile::ReadOnly | QFile::Text);
     if(theme_file.isOpen()) {
         QTextStream ts(&theme_file);

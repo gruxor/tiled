@@ -111,6 +111,21 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     mUi->tabWidget->setUsesScrollButtons(true);
     mUi->tabWidget->tabBar()->setElideMode(Qt::ElideRight);
 
+    const QDir themeDir(QDir::currentPath() + QLatin1String("/theme"));
+    const struct {
+        const char *displayName;
+        const char *fileName;
+    } externalThemes[] = {
+        { "Combinear", "Combinear.qss" },
+        { "Dane", "Dane.qss" }
+    };
+    for (const auto &theme : externalThemes) {
+        if (themeDir.exists(QLatin1String(theme.fileName))
+                && mUi->themeCombo->findText(QLatin1String(theme.displayName)) == -1) {
+            mUi->themeCombo->addItem(QLatin1String(theme.displayName));
+        }
+    }
+
     QSize initialSize = sizeHint();
     if (QScreen *screen = QGuiApplication::primaryScreen()) {
         const QRect availableGeometry = screen->availableGeometry();
