@@ -352,8 +352,10 @@ void TileMetaInfoDialog::removeTileset()
     QList<QListWidgetItem*> selection = ui->tilesets->selectedItems();
     QListWidgetItem *item = selection.count() ? selection.first() : 0;
     if (item) {
-        int row = ui->tilesets->row(item);
-        Tileset *tileset = TileMetaInfoMgr::instance()->tileset(row);
+        const QString tilesetName = item->data(Qt::UserRole).toString();
+        Tileset *tileset = TileMetaInfoMgr::instance()->tileset(tilesetName);
+        if (!tileset)
+            return;
         if (QMessageBox::question(this, tr("Remove Tileset"),
                                   tr("Really remove the tileset '%1'?\nYou will lose all the meta-info for this tileset!")
                                   .arg(tileset->name()),
@@ -421,9 +423,11 @@ void TileMetaInfoDialog::currentTilesetChanged(int row)
 {
     if (mClosing)
         return;
+    Q_UNUSED(row)
     mCurrentTileset = 0;
-    if (row >= 0) {
-        mCurrentTileset = TileMetaInfoMgr::instance()->tileset(row);
+    if (QListWidgetItem *item = ui->tilesets->currentItem()) {
+        const QString tilesetName = item->data(Qt::UserRole).toString();
+        mCurrentTileset = TileMetaInfoMgr::instance()->tileset(tilesetName);
     }
     setTilesList();
     updateUI();
@@ -711,6 +715,7 @@ void TileMetaInfoDialog::setTilesetList()
     ui->tilesets->clear();
     foreach (Tileset *ts, TileMetaInfoMgr::instance()->tilesets()) {
         QListWidgetItem *item = new QListWidgetItem(ts->name());
+        item->setData(Qt::UserRole, ts->name());
         if (ts->isMissing())
             item->setForeground(Qt::red);
         ui->tilesets->addItem(item);
