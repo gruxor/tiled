@@ -1138,9 +1138,12 @@ bool CompositeLayerGroup::setLayerNonEmpty(TileLayer *tl, bool force)
 
 void CompositeLayerGroup::calculateUnlitRoomMask(BuildingEditor::Building *building)
 {
+    if (!building) return;
     clearUseImageBlack();
     prepareDrawing2();
     BuildingEditor::BuildingFloor *floor = building->floor(level());
+    if (!floor) return;
+
     for (BuildingEditor::Room *room : building->rooms()) {
         BuildingEditor::BuildingRoomDefecator rd(floor, room);
         rd.defecate();

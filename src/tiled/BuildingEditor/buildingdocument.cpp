@@ -124,6 +124,11 @@ BuildingDocument *BuildingDocument::read(const QString &fileName, QString &error
     if (Building *building = reader.read(fileName)) {
         reader.fix(building);
         BuildingMap::loadNeededTilesets(building);
+        if (building->floors().isEmpty()) {
+            error = QObject::tr("Failed to read \"%1\": no floors found.").arg(fileName);
+            delete building;
+            return 0;
+        }
         BuildingDocument *doc = new BuildingDocument(building, fileName);
         if (fileName.endsWith(QLatin1String(".autosave")))
             doc->mFileName.clear();

@@ -500,6 +500,12 @@ Building *BuildingReaderPrivate::readBuilding()
         mBuilding = 0;
     }
 
+    if (mBuilding && mBuilding->floorCount() == 0) {
+        xml.raiseError(tr("Building has no floors (malformed file)"));
+        delete mBuilding;
+        mBuilding = 0;
+    }
+
     return mBuilding;
 }
 
@@ -1373,7 +1379,8 @@ void BuildingReaderPrivate::fix(Building *building)
 
     QList<FurnitureTiles*> usedFurniture;
     foreach (FurnitureTiles *ftiles, building->usedFurniture())
-        usedFurniture += fixFurniture(ftiles);
+        if (FurnitureTiles *fixed = fixFurniture(ftiles))
+            usedFurniture += fixed;
     building->setUsedFurniture(usedFurniture);
 
     QList<BuildingTileEntry*> usedTiles;
@@ -1391,8 +1398,13 @@ void BuildingReaderPrivate::fix(Building *building)
 
 FurnitureTiles *BuildingReaderPrivate::fixFurniture(FurnitureTiles *ftiles)
 {
+    if (!ftiles)
+        return nullptr;
+
     if (!fixedFurniture.contains(ftiles)) {
         foreach (FurnitureTile *ftile, ftiles->tiles()) {
+            if (!ftile)
+                continue;
             for (int y = 0; y < ftile->size().height(); y++) {
                 for (int x = 0; x < ftile->size().width(); x++) {
                     if (BuildingTile *btile = ftile->tile(x, y)) {
@@ -1420,9 +1432,22 @@ BuildingTileEntry *BuildingReaderPrivate::fixEntry(BuildingTileEntry *entry)
         return entry;
 
     if (!fixedEntries.contains(entry)) {
+        if (!entry->category()) {
+            qDebug() << tr("Invalid tile entry with null category in %1").arg(mPath);
+            fixedEntries[entry] = BuildingTilesMgr::instance()->noneTileEntry();
+            deadEntries.insert(entry);
+            return fixedEntries[entry];
+        }
+
         Q_ASSERT(BuildingTilesMgr::instance()->indexOf(entry->mCategory) == -1);
         QString categoryName = entry->category()->name();
         BuildingTileCategory *category = BuildingTilesMgr::instance()->category(categoryName);
+        if (!category) {
+            qDebug() << tr("Unknown tile-entry category '%1' in %2").arg(categoryName).arg(mPath);
+            fixedEntries[entry] = BuildingTilesMgr::instance()->noneTileEntry();
+            deadEntries.insert(entry);
+            return fixedEntries[entry];
+        }
         deadCategories.insert(entry->mCategory);
         entry->mCategory = category;
         for (int i = 0; i < category->enumCount(); i++) {
