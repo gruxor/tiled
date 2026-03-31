@@ -426,7 +426,7 @@ bool LuaTileLayer::replaceTile(Tile *oldTile, Tile *newTile)
     bool replaced = false;
     if (oldTile == LuaMap::noneTile())
     {
-        for (int y = 0; y < mClone->width(); y++) {
+        for (int y = 0; y < mClone->height(); y++) {
             for (int x = 0; x < mClone->width(); x++) {
                 if (mCloneTileLayer->cellAt(x, y).isEmpty()) {
                     mCloneTileLayer->setCell(x, y, Cell(newTile));
@@ -437,7 +437,7 @@ bool LuaTileLayer::replaceTile(Tile *oldTile, Tile *newTile)
         }
     }
     else {
-        for (int y = 0; y < mClone->width(); y++) {
+        for (int y = 0; y < mClone->height(); y++) {
             for (int x = 0; x < mClone->width(); x++) {
                 if (mCloneTileLayer->cellAt(x, y).tile == oldTile) {
                     mCloneTileLayer->setCell(x, y, Cell(newTile));
@@ -456,7 +456,7 @@ bool LuaTileLayer::replaceTiles(QList<Tile *> &tiles)
         return false;
     initClone();
     bool replaced = false;
-    for (int y = 0; y < mClone->width(); y++) {
+    for (int y = 0; y < mClone->height(); y++) {
         for (int x = 0; x < mClone->width(); x++) {
             for (int i = 0; i < tiles.size(); i += 2) {
                 Tile *oldTile = tiles[i];
