@@ -116,6 +116,10 @@ CompositeLayerGroup::CompositeLayerGroup(MapComposite *owner, int level)
 
 }
 
+CompositeLayerGroup::~CompositeLayerGroup()
+{
+}
+
 void CompositeLayerGroup::addTileLayer(TileLayer *layer, int index)
 {
 #ifndef WORLDED
@@ -223,6 +227,11 @@ void CompositeLayerGroup::prepareDrawing(const MapRenderer *renderer, const QRec
 static QString sFloor = QStringLiteral("Floor");
 static QString sAboveLot = QStringLiteral("AboveLot");
 
+static bool shouldSuppressExistingTilesOnLevel(int level) {
+    Q_UNUSED(level)
+    return true;
+}
+
 bool CompositeLayerGroup::orderedCellsAt(const QPoint &pos,
                                          QVector<const Cell *> &cells,
                                          QVector<qreal> &opacities,
@@ -252,7 +261,7 @@ bool CompositeLayerGroup::orderedCellsAt(const QPoint &pos,
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tile suppress all other tiles from overlapping maps, including AboveLot tiles.
             cellsToKeep.clear();
             aboveLotCells.clear();
@@ -275,11 +284,11 @@ bool CompositeLayerGroup::orderedCellsAt(const QPoint &pos,
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tile suppress all other tiles, except AboveLot tiles.
             cellsToKeep.clear();
         }
-        if (mLevel == 0 && !cellsToKeep.isEmpty()) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && !cellsToKeep.isEmpty()) {
 #if 1
             // Discard all tiles in non-Floor layers.  This keeps exterior building walls that don't have floors.
             // Keep only the floor layers in a contiguous range starting at the lowest level (no non-floor layers between floor layers).
@@ -498,7 +507,7 @@ bool CompositeLayerGroup::orderedCellsAt2(const QPoint &pos, OrderedCellsTempora
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tile suppress all other tiles from overlapping maps, including AboveLot tiles.
             cellsToKeep.clear();
             aboveLotCells.clear();
@@ -521,11 +530,11 @@ bool CompositeLayerGroup::orderedCellsAt2(const QPoint &pos, OrderedCellsTempora
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tile suppress all other tiles, except AboveLot tiles.
             cellsToKeep.clear();
         }
-        if (mLevel == 0 && !cellsToKeep.isEmpty()) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && !cellsToKeep.isEmpty()) {
 #if 1
             // Discard all tiles in non-Floor layers.  This keeps exterior building walls that don't have floors.
             // Keep only the floor layers in a contiguous range starting at the lowest level (no non-floor layers between floor layers).
@@ -726,7 +735,7 @@ bool CompositeLayerGroup::orderedCellsAt3(const QPoint &pos, OrderedCellsTempora
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tile suppress all other tiles from overlapping maps, including AboveLot tiles.
             // In practice this doesn't happen, because cell maps don't overlap.
             cellMapCells.clear();
@@ -754,9 +763,26 @@ bool CompositeLayerGroup::orderedCellsAt3(const QPoint &pos, OrderedCellsTempora
         if (orderedCells.isEmpty()) {
             continue;
         }
-        if (mLevel == 0 && orderedCells.first().layer->name() == sFloor) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && orderedCells.first().layer->name() == sFloor) {
             // Floor tiles suppress all other tiles, except AboveLot tiles.
-            buildingCells.clear();
+            for (int i = 0; i < buildingCells.size(); i++) {
+                TilePlusLayer& cell = buildingCells[i];
+                cell.mHideIfVisible = subMapLayer.mSubMap;
+            }
+        }
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && !buildingCells.isEmpty()) {
+            // Discard all tiles in non-Floor layers.  This keeps exterior building walls that don't have floors.
+            // Keep only the floor layers in a contiguous range starting at the lowest level (no non-floor layers between floor layers).
+            bool suppress = false;
+            for (int i = 0; i < buildingCells.size(); i++) {
+                TilePlusLayer& cell = buildingCells[i];
+                int p = cell.mLayerName.indexOf(QLatin1Char('_')) + 1; // strip N_ level prefix
+                QStringRef layerNameWithoutPrefix = cell.mLayerName.midRef(p);
+                if (suppress || !layerNameWithoutPrefix.startsWith(sFloor)) {
+                    cell.mHideIfVisible = subMapLayer.mSubMap;
+                    suppress = true;
+                }
+            }
         }
         for (const OrderedCell &oc : qAsConst(orderedCells)) {
             TilePlusLayer buildingCell(oc.layer->nameWithPrefix(), oc.cell->tile, oc.layerGroup->mVisibleLayers[oc.layerIndex], oc.opacity);
@@ -767,13 +793,13 @@ bool CompositeLayerGroup::orderedCellsAt3(const QPoint &pos, OrderedCellsTempora
 
     // Overwrite cell-map tiles with building tiles at this location
     if ((buildingCells.isEmpty() == false) && (cellMapCells.isEmpty() == false)) {
-        if (mLevel == 0 && buildingCells.first().mLayerName == QStringLiteral("0_Floor")) {
+        if (shouldSuppressExistingTilesOnLevel(mLevel) && buildingCells.first().mLayerName == QStringLiteral("0_Floor")) {
             // Floor tile suppress all other tiles, except AboveLot tiles.
             for (TilePlusLayer &cell : cellMapCells) {
                 cell.mHideIfVisible = buildingCells.first().mSubMap;
             }
         }
-        else if (mLevel == 0) {
+        else if (shouldSuppressExistingTilesOnLevel(mLevel)) {
             // Discard all tiles in non-Floor layers.  This keeps exterior building walls that don't have floors.
             // Keep only the floor layers in a contiguous range starting at the lowest level (no non-floor layers between floor layers).
             bool bKeepFloors = true;
@@ -1311,6 +1337,12 @@ bool CompositeLayerGroup::setLayerOpacity(TileLayer *tl, qreal opacity)
     return false;
 }
 
+qreal CompositeLayerGroup::layerOpacity(Tiled::TileLayer *tl) const
+{
+    int index = mLayers.indexOf(tl);
+    return (index == -1) ? 1.0f : mLayerOpacity[index];
+}
+
 void CompositeLayerGroup::synchSubMapLayerOpacity(const QString &layerName, qreal opacity)
 {
     foreach (MapComposite *subMap, mOwner->subMaps()) {
@@ -1605,6 +1637,8 @@ MapComposite *MapComposite::addMap(MapInfo *mapInfo, const QPoint &pos,
         mc = mc->mParent;
     }
 
+    mChangeCount++;
+
     return subMap;
 }
 
@@ -1616,6 +1650,8 @@ void MapComposite::removeMap(MapComposite *subMap)
 
     foreach (CompositeLayerGroup *layerGroup, mLayerGroups)
         layerGroup->setNeedsSynch(true);
+
+    mChangeCount++;
 }
 
 void MapComposite::moveSubMap(MapComposite *subMap, const QPoint &pos)
@@ -1625,6 +1661,25 @@ void MapComposite::moveSubMap(MapComposite *subMap, const QPoint &pos)
 
     foreach (CompositeLayerGroup *layerGroup, mLayerGroups)
         layerGroup->setNeedsSynch(true);
+
+    mChangeCount++;
+}
+
+void MapComposite::sortSubMaps(const QVector<MapComposite *> &order)
+{
+    std::sort(mSubMaps.begin(), mSubMaps.end(), [order,this](MapComposite *a, MapComposite *b) {
+        int indexA = order.indexOf(a);
+        int indexB = order.indexOf(b);
+        if (indexA == -1)
+            indexA = mSubMaps.indexOf(a);
+        if (indexB == -1)
+            indexB = mSubMaps.indexOf(b);
+        return indexA < indexB;
+    });
+
+    for (CompositeLayerGroup *layerGroup : qAsConst(mLayerGroups)) {
+        layerGroup->setNeedsSynch(true);
+    }
 }
 
 void MapComposite::layerAdded(int index)
@@ -1974,6 +2029,7 @@ bool MapComposite::mapChanged(MapInfo *mapInfo)
 {
     if (mapInfo == mMapInfo) {
         recreate();
+        mChangeCount++;
         return true;
     }
 
@@ -1985,6 +2041,7 @@ bool MapComposite::mapChanged(MapInfo *mapInfo)
                 foreach (CompositeLayerGroup *layerGroup, mLayerGroups)
                     layerGroup->setNeedsSynch(true);
                 changed = true;
+                mChangeCount++;
             }
         }
     }
@@ -2024,6 +2081,7 @@ void MapComposite::synch()
     foreach (CompositeLayerGroup *layerGroup, mLayerGroups) {
         if (layerGroup->needsSynch()) {
             layerGroup->synch();
+            mChangeCount++;
         }
     }
 }
@@ -2248,6 +2306,7 @@ void MapComposite::mapLoaded(MapInfo *mapInfo)
             mc = mc->mParent;
         }
 #endif
+        mChangeCount++;
         emit needsSynch();
     }
 }
