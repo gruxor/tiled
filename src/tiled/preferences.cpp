@@ -62,7 +62,7 @@ void Preferences::deleteInstance()
 
 Preferences::Preferences()
 : QObject()
-    , mSettings(new QSettings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat))
+    , mSettings(new QSettings(QCoreApplication::applicationDirPath() + QLatin1String("/settings.ini"), QSettings::IniFormat))
 {
     // Retrieve storage settings
     mSettings->beginGroup(QLatin1String("Storage"));
