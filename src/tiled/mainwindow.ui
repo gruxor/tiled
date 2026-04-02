@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>TileZed (Unofficial fork by Alree, 2026 Patch by gruxor)</string>
+   <string>TileZed Community Edition</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>

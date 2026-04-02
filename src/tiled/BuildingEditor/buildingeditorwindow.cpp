@@ -1327,7 +1327,7 @@ void BuildingEditorWindow::clearDocument()
 void BuildingEditorWindow::updateWindowTitle()
 {
     if (ModeManager::instance().currentMode() == mWelcomeMode) {
-        setWindowTitle(tr("BuildingEd Unofficial Fork (Unified 2026 Patch)"));
+        setWindowTitle(tr("BuildingEd Community Edition"));
         return;
     }
 
@@ -1337,7 +1337,7 @@ void BuildingEditorWindow::updateWindowTitle()
     else {
         fileName = QDir::toNativeSeparators(fileName);
     }
-    setWindowTitle(tr("[*]%1 - Building Editor Unofficial Fork (Unified 2026 Patch)").arg(fileName));
+    setWindowTitle(tr("[*]%1 - BuildingEd Community Edition").arg(fileName));
     setWindowFilePath(fileName);
     setWindowModified(mCurrentDocument ? mCurrentDocument->isModified() : false);
 }
