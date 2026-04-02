@@ -159,7 +159,7 @@ Preferences::Preferences()
     mMapsDirectory = mSettings->value(QLatin1String("Current"), QString()).toString();
     mSettings->endGroup();
 
-    QString configPath = QDir::currentPath() + QLatin1String("/.TileZed");
+    QString configPath = QDir::applicationDirPath() + QLatin1String("/../.editordata");
     mConfigDirectory = mSettings->value(QLatin1String("ConfigDirectory"),
                                         configPath).toString();
 
@@ -456,7 +456,7 @@ void Preferences::setAutomappingDrawing(bool enabled)
 #ifdef ZOMBOID
 QString Preferences::userPath() const
 {
-    QString userPath = QDir::currentPath() + QLatin1String("/.TileZed");
+    QString userPath = QDir::applicationDirPath() + QLatin1String("/../.editordata");
     return userPath;
 }
 

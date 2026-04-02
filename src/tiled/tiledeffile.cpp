@@ -506,7 +506,7 @@ bool TilePropertyMgr::readTxt()
 {
     QFileInfo info(txtPath());
 
-    // Create ~/.TileZed if needed.
+    // Create ~/.editordata if needed.
     QString configPath = Preferences::instance()->configPath();
     QDir dir(configPath);
     if (!dir.exists()) {
@@ -517,7 +517,7 @@ bool TilePropertyMgr::readTxt()
         }
     }
 
-    // Copy TileProperties.txt from the application directory to the ~/.TileZed
+    // Copy TileProperties.txt from the application directory to the ~/.editordata
     // directory if needed.
     if (!info.exists()) {
         QString source = Preferences::instance()->appConfigPath(txtName());

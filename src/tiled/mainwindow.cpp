@@ -1045,7 +1045,7 @@ bool MainWindow::InitConfigFiles()
     // Refresh the ui before blocking while loading tilesets etc
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    // Create ~/.TileZed if needed.
+    // Create ~/.editordata if needed.
     QString configPath = Preferences::instance()->configPath();
     QDir dir(configPath);
     if (!dir.exists()) {
@@ -1057,7 +1057,7 @@ bool MainWindow::InitConfigFiles()
         }
     }
 
-    // Copy config files from the application directory to ~/.TileZed if they
+    // Copy config files from the application directory to ~/.editordata if they
     // don't exist there.
     QStringList configFiles;
     configFiles += TileMetaInfoMgr::instance()->txtName();

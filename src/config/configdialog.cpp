@@ -33,7 +33,7 @@ ConfigDialog::ConfigDialog(QWidget *parent) :
     // Utiliser le fichier settings.ini
     QSettings settings(QCoreApplication::applicationDirPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
 
-    QString defaultPath = QCoreApplication::applicationDirPath() + QLatin1String("/.TileZed");
+    QString defaultPath = QCoreApplication::applicationDirPath() + QLatin1String("/../.editordata");
     QString configPath = settings.value(KEY_CONFIG_DIR, defaultPath).toString();
     ui->configDirectory->setText(configPath);
 
@@ -56,7 +56,7 @@ void ConfigDialog::configBrowse()
 
 void ConfigDialog::accept()
 {
-    QSettings settings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
+    QSettings settings(QCoreApplication::applicationDirPath() + QLatin1String("/settings.ini"), QSettings::IniFormat);
     settings.setValue(KEY_CONFIG_DIR, ui->configDirectory->text());
     QDialog::accept();
 }
