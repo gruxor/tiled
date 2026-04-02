@@ -162,6 +162,7 @@ for %%F in (
 )
 
 call :copy_dir "%SRC%\lua" "%BUILD%\lua" || goto :fail
+call :copy_dir "%SRC%\theme" "%BUILD%\theme" || goto :fail
 call :copy_dir "%SRC%\examples" "%BUILD%\examples" || goto :fail
 call :copy_dir "%SRC%\docs\TileProperties" "%BUILD%\docs\TileProperties" || goto :fail
 call :copy_dir "%SRC%\docs\TileZed" "%BUILD%\docs\TileZed" || goto :fail

@@ -129,9 +129,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QSize initialSize = sizeHint();
     if (QScreen *screen = QGuiApplication::primaryScreen()) {
         const QRect availableGeometry = screen->availableGeometry();
-        const QSize maxDefaultSize(availableGeometry.width() * 0.50,
-                                   availableGeometry.height() * 0.50);
-        initialSize = initialSize.boundedTo(maxDefaultSize);
+        const QSize minDefaultSize(qRound(availableGeometry.width() * 0.32),
+                                   qRound(availableGeometry.height() * 0.50));
+        initialSize = initialSize.expandedTo(minDefaultSize);
     }
     resize(initialSize);
 

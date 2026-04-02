@@ -176,10 +176,12 @@ Preferences::Preferences()
             bHasNewTileDefinitions = true;
         }
     }
-    if ((bHasNewTileDefinitions == false) && (mTilesDirectory.isEmpty() == false)) {
-        QFileInfo fileInfo(mTilesDirectory + QLatin1String("/newtiledefinitions.tiles"));
-        mTilePropertiesFiles += QDir::toNativeSeparators(fileInfo.canonicalFilePath());
-        mSettings->setValue(QLatin1String("TilePropertiesFiles"), mTilePropertiesFiles);
+    if (!bHasNewTileDefinitions) {
+        const QFileInfo fileInfo(userPath(QLatin1String("newtiledefinitions.tiles")));
+        if (fileInfo.exists() && fileInfo.isFile()) {
+            mTilePropertiesFiles += QDir::toNativeSeparators(fileInfo.canonicalFilePath());
+            mSettings->setValue(QLatin1String("TilePropertiesFiles"), mTilePropertiesFiles);
+        }
     }
 #endif
 #ifndef ZOMBOID // do this in TilesetManager constructor to avoid infinite loop
@@ -792,7 +794,10 @@ void Preferences::applyTheme()
 
     QString resource;
     QString filePath;
-    if (mTheme == QStringLiteral("Breeze (Dark)")) {
+    if (mTheme == QStringLiteral("Default")) {
+        qApp->setStyleSheet(QString());
+        return;
+    } else if (mTheme == QStringLiteral("Breeze (Dark)")) {
         resource = QStringLiteral(":breeze/dark/stylesheet.qss");
     } else if (mTheme == QStringLiteral("QDarkStyle (Dark)")) {
         resource = QStringLiteral(":qdarkstyle/dark/darkstyle.qss");
