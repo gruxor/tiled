@@ -158,6 +158,8 @@ void OrthogonalRenderer::drawGrid(QPainter *painter, const QRectF &rect,
 {
     Q_UNUSED(level)
     Q_UNUSED(tileBounds)
+    Q_UNUSED(opacity)
+    Q_UNUSED(width)
 #else
 void OrthogonalRenderer::drawGrid(QPainter *painter, const QRectF &rect,
                                   QColor gridColor, int opacity, int width) const

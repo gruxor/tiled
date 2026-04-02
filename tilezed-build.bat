@@ -31,6 +31,7 @@ call :find_qt5 || exit /b 1
 
 set "QMAKE=%QT%\bin\qmake.exe"
 set "WINDEPLOYQT=%QT%\bin\windeployqt.exe"
+set "CONFIG_STAMP=%BUILD%\.configure.stamp"
 
 set "MAKE_TOOL=nmake"
 where jom >nul 2>&1 && set "MAKE_TOOL=jom"
@@ -62,11 +63,25 @@ if "%CLEAN_BUILD%"=="1" (
 if not exist "%BUILD%" mkdir "%BUILD%" || (echo ERROR: failed to create build dir & exit /b 1)
 
 cd /d "%BUILD%" || (echo ERROR: cd failed & exit /b 1)
-if "%FORCE_QMAKE%"=="1" (
+set "NEED_QMAKE=0"
+if "%FORCE_QMAKE%"=="1" set "NEED_QMAKE=1"
+if not exist "%BUILD%\Makefile" set "NEED_QMAKE=1"
+if not exist "%CONFIG_STAMP%" set "NEED_QMAKE=1"
+if "%NEED_QMAKE%"=="0" (
+  findstr /x /c:"SRC=%SRC%" "%CONFIG_STAMP%" >nul 2>&1 || set "NEED_QMAKE=1"
+)
+if "%NEED_QMAKE%"=="0" (
+  findstr /x /c:"QMAKE=%QMAKE%" "%CONFIG_STAMP%" >nul 2>&1 || set "NEED_QMAKE=1"
+)
+
+if "%NEED_QMAKE%"=="1" (
+  echo [prep] reconfiguring with qmake
   "%QMAKE%" "%SRC%\tiled.pro" -r -spec %SPEC% "CONFIG+=%CFG%" %QMAKE_MP_ARGS% || goto :fail
-) else (
-  if not exist "%BUILD%\Makefile" (
-    "%QMAKE%" "%SRC%\tiled.pro" -r -spec %SPEC% "CONFIG+=%CFG%" %QMAKE_MP_ARGS% || goto :fail
+  > "%CONFIG_STAMP%" (
+    echo SRC=%SRC%
+    echo QMAKE=%QMAKE%
+    echo SPEC=%SPEC%
+    echo CFG=%CFG%
   )
 )
 

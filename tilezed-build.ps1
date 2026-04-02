@@ -199,20 +199,40 @@ try {
         }
     }
 
+    # Avoid inheriting stale overrides from the parent shell unless explicitly provided.
     if ($OutputPath) {
         $env:BUILD_OUTPUT_PATH = $OutputPath
     }
+    else {
+        [Environment]::SetEnvironmentVariable('BUILD_OUTPUT_PATH', $null, 'Process')
+    }
+
     if ($NoCleanup) {
         $env:NO_CLEANUP = '1'
     }
+    else {
+        [Environment]::SetEnvironmentVariable('NO_CLEANUP', $null, 'Process')
+    }
+
     if ($QtPath) {
         $env:QT_OVERRIDE = $QtPath
     }
+    else {
+        [Environment]::SetEnvironmentVariable('QT_OVERRIDE', $null, 'Process')
+    }
+
     if ($VcVarsPath) {
         $env:VCVARS_OVERRIDE = $VcVarsPath
     }
+    else {
+        [Environment]::SetEnvironmentVariable('VCVARS_OVERRIDE', $null, 'Process')
+    }
+
     if ($Jobs) {
         $env:JOBS = $Jobs
+    }
+    else {
+        [Environment]::SetEnvironmentVariable('JOBS', $null, 'Process')
     }
 
     $quotedArgs = @('"' + $buildScript + '"')
@@ -260,8 +280,7 @@ try {
         }
     }
 
-    $global:LASTEXITCODE = $exitCode
-    return
+    exit $exitCode
 }
 finally {
     [Environment]::SetEnvironmentVariable('BUILD_OUTPUT_PATH', $oldBuildOutputPath, 'Process')

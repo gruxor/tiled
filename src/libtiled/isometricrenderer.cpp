@@ -138,6 +138,8 @@ void IsometricRenderer::drawGrid(QPainter *painter, const QRectF &rect,
                                  const QRect &tileBounds) const
 {
     Q_UNUSED(level)
+    Q_UNUSED(opacity)
+    Q_UNUSED(width)
 
     QRect b = tileBounds;
     if (b.isEmpty())
