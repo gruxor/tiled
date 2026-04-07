@@ -100,6 +100,7 @@ SOURCES += aboutdialog.cpp \
     commanddialog.cpp \
     commandlineparser.cpp \
     createobjecttool.cpp \
+    documentmanager.cpp \
     debuglogger.cpp \
     editpolygontool.cpp \
     eraser.cpp \
