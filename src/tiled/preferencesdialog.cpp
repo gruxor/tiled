@@ -111,7 +111,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     mUi->tabWidget->setUsesScrollButtons(true);
     mUi->tabWidget->tabBar()->setElideMode(Qt::ElideRight);
 
-    const QDir themeDir(QDir::currentPath() + QLatin1String("/theme"));
+    const QDir themeDir(QCoreApplication::applicationDirPath() + QLatin1String("/theme"));
     const struct {
         const char *displayName;
         const char *fileName;

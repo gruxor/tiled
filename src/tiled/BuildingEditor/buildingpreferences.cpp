@@ -18,7 +18,7 @@
 #include "buildingpreferences.h"
 #include "preferences.h"
 
-#include <QDir>
+#include <QCoreApplication>
 
 using namespace BuildingEditor;
 
@@ -53,7 +53,7 @@ void BuildingPreferences::deleteInstance()
 
 BuildingPreferences::BuildingPreferences(QObject *parent) :
     QObject(parent),
-    mSettings(QDir::currentPath() + QLatin1String("/settings.ini"), QSettings::IniFormat)
+    mSettings(QCoreApplication::applicationDirPath() + QLatin1String("/settings.ini"), QSettings::IniFormat)
 {
     if (!mSettings.contains(QLatin1String(KEY_MAPS_DIRECTORY))) {
         mSettings.setValue(QLatin1String(KEY_MAPS_DIRECTORY),

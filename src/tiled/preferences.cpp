@@ -804,9 +804,9 @@ void Preferences::applyTheme()
     } else if (mTheme == QStringLiteral("QDarkStyle (Light)")) {
         resource = QStringLiteral(":qdarkstyle/light/lightstyle.qss");
     } else if (mTheme == QStringLiteral("Combinear")) {
-        filePath = QDir::currentPath() + QLatin1String("/theme/Combinear.qss");
+        filePath = QCoreApplication::applicationDirPath() + QLatin1String("/theme/Combinear.qss");
     } else if (mTheme == QStringLiteral("Dane")) {
-        filePath = QDir::currentPath() + QLatin1String("/theme/Dane.qss");
+        filePath = QCoreApplication::applicationDirPath() + QLatin1String("/theme/Dane.qss");
     } else {
         return;
     }
