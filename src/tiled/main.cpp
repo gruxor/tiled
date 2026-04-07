@@ -21,6 +21,7 @@
  */
 
 #include "commandlineparser.h"
+#include "debuglogger.h"
 #include "mainwindow.h"
 #include "languagemanager.h"
 #include "preferences.h"
@@ -139,6 +140,8 @@ static void __cdecl invalid_parameter_handler(
 
 int main(int argc, char *argv[])
 {
+    DebugLogger::install(QStringLiteral("debug.log"));
+
 #if !defined(QT_NO_DEBUG) && defined(ZOMBOID) && defined(_MSC_VER)
     _set_invalid_parameter_handler(invalid_parameter_handler);
 #endif
@@ -239,5 +242,7 @@ int main(int argc, char *argv[])
         w.openLastFiles();
     }
 
-    return a.exec();
+    int ret = a.exec();
+    DebugLogger::uninstall();
+    return ret;
 }

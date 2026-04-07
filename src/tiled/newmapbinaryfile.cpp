@@ -12,6 +12,8 @@
 
 #include "BuildingEditor/buildingfloor.h"
 
+#include <QDebug>
+#include <QElapsedTimer>
 #include <qmath.h>
 
 using namespace Tiled;
@@ -25,7 +27,12 @@ NewMapBinaryFile::NewMapBinaryFile(int squaresPerChunk)
 
 bool NewMapBinaryFile::write(MapComposite *mapComposite, const QVector<Tiled::PropertiesGrid*>& propertiesGrids, const QString &filePath)
 {
+    QElapsedTimer writeTimer;
+    writeTimer.start();
+
     MapInfo* mapInfo = mapComposite->mapInfo();
+    qDebug() << "NewMapBinaryFile::write() started" << filePath
+             << "mapSize:" << mapInfo->width() << "x" << mapInfo->height();
 
     mStats = LotFile::Stats();
 
@@ -41,6 +48,8 @@ bool NewMapBinaryFile::write(MapComposite *mapComposite, const QVector<Tiled::Pr
     }
 
     MaxLevel += 1;
+
+    qDebug() << "  MaxLevel:" << MaxLevel << "numSubMaps:" << mapComposite->maps().size();
 
     if (!generateHeader(mapComposite))
         return false;
@@ -108,6 +117,7 @@ bool NewMapBinaryFile::write(MapComposite *mapComposite, const QVector<Tiled::Pr
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly /*| QIODevice::Text*/)) {
         mError = tr("Could not open file for writing.");
+        qWarning() << "  Failed to open" << filePath << "for writing";
         return false;
     }
 
@@ -141,6 +151,7 @@ bool NewMapBinaryFile::write(MapComposite *mapComposite, const QVector<Tiled::Pr
     file.close();
     if (!file.open(QIODevice::ReadWrite | QIODevice::Append)) {
         mError = tr("Could not open file for writing.");
+        qWarning() << "  Failed to reopen" << filePath << "for chunk table write-back";
         return false;
     }
     file.seek(chunkTablePosition);
@@ -157,11 +168,15 @@ bool NewMapBinaryFile::write(MapComposite *mapComposite, const QVector<Tiled::Pr
     Navigate::ChunkDataFile cdf;
     cdf.fromMap(cell->x(), cell->y(), mapComposite, mRoomRectByLevel[0], lotSettings);
 #endif
+    qDebug() << "NewMapBinaryFile::write() completed in" << writeTimer.elapsed() << "ms"
+             << "rooms:" << roomList.size() << "buildings:" << buildingList.size()
+             << "roomRects:" << mRoomRects.size() << "tileMap:" << mTileMap.size();
     return true;
 }
 
 bool NewMapBinaryFile::generateHeader(MapComposite *mapComposite)
 {
+    qDebug() << "  generateHeader() started";
     qDeleteAll(mRoomRects);
     qDeleteAll(roomList);
     qDeleteAll(buildingList);
@@ -197,6 +212,8 @@ bool NewMapBinaryFile::generateHeader(MapComposite *mapComposite)
             return false;
         }
     }
+    qDebug() << "  generateHeader(): tilesets processed:" << tilesets.size()
+             << "tileMap entries:" << mTileMap.size() << "firstGid:" << firstGid;
 
     if (!processObjectGroups(mapComposite)) {
         return false;
@@ -304,12 +321,16 @@ bool NewMapBinaryFile::generateHeader(MapComposite *mapComposite)
     }
     mStats.numBuildings += buildingList.size();
 
+    qDebug() << "  generateHeader() done: rooms:" << roomList.size()
+             << "buildings:" << buildingList.size() << "roomRects:" << mRoomRects.size();
+
     return true;
 }
 
 bool NewMapBinaryFile::generateHeaderAux(QDataStream &out, MapComposite *mapComposite)
 {
     Q_UNUSED(mapComposite)
+    qDebug() << "  generateHeaderAux() writing PZBY header";
 
     out << quint8('P') << quint8('Z') << quint8('B') << quint8('Y');
     Version = 0;
@@ -323,6 +344,9 @@ bool NewMapBinaryFile::generateHeaderAux(QDataStream &out, MapComposite *mapComp
         }
     }
     out << qint32(tilecount);
+
+    qDebug() << "  generateHeaderAux(): tilecount:" << tilecount
+             << "rooms:" << roomList.count() << "buildings:" << buildingList.count();
 
     for (LotFile::Tile *tile : qAsConst(mTileMap)) {
         if (tile->used) {
@@ -522,6 +546,7 @@ bool NewMapBinaryFile::handleTileset(const Tiled::Tileset *tileset, uint &firstG
 {
     if (!tileset->fileName().isEmpty()) {
         mError = tr("Only tileset image files supported, not external tilesets");
+        qWarning() << "  handleTileset() FAILED: external tileset" << tileset->name();
         return false;
     }
 
@@ -546,6 +571,9 @@ bool NewMapBinaryFile::handleTileset(const Tiled::Tileset *tileset, uint &firstG
     mTilesetToFirstGid.insert(tileset, firstGid);
     mTilesetNameToFirstGid.insert(name, firstGid);
     firstGid += uint(tileset->tileCount());
+
+    qDebug() << "  handleTileset():" << name << "tileCount:" << tileset->tileCount()
+             << "firstGid:" << (firstGid - uint(tileset->tileCount()));
 
     return true;
 }
@@ -591,6 +619,7 @@ bool NewMapBinaryFile::processObjectGroup(ObjectGroup *objectGroup, int levelOff
     int level = objectGroup->level();
     level += levelOffset;
 
+    int roomDefCount = 0;
     for (const MapObject *mapObject : objectGroup->objects()) {
 #if 0
         if (mapObject->name().isEmpty() || mapObject->type().isEmpty())
@@ -631,7 +660,11 @@ bool NewMapBinaryFile::processObjectGroup(ObjectGroup *objectGroup, int levelOff
                                                           w, h);
             mRoomRects += rr;
             mRoomRectByLevel[level] += rr;
+            roomDefCount++;
         }
+    }
+    if (roomDefCount > 0) {
+        qDebug() << "  processObjectGroup():" << objectGroup->name() << "roomDefs:" << roomDefCount << "level:" << level;
     }
     return true;
 }
