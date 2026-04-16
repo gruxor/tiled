@@ -8,6 +8,7 @@
 #include <QButtonGroup>
 #include <QDebug>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPainter>
 #include <QSettings>
 
@@ -58,8 +59,17 @@ void PackExtractDialog::accept()
 //        return;
 
     QDir outputDir(ui->outputEdit->text());
-    if (!outputDir.exists())
+    if (!outputDir.exists()) {
+        QMessageBox::warning(this, tr("Extract .pack Images"),
+                             tr("The output directory does not exist:\n%1").arg(outputDir.path()));
         return;
+    }
+
+    if (ui->radioSingle->isChecked() && prefix.isEmpty()) {
+        QMessageBox::warning(this, tr("Extract .pack Images"),
+                             tr("Prefix is required when creating a single tilesheet.\nEnter the tileset name (e.g. \"appliances_cooking_01\")."));
+        return;
+    }
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("PackExtractDialog"));
@@ -67,6 +77,8 @@ void PackExtractDialog::accept()
     settings.setValue(QStringLiteral("Prefix"), prefix);
     settings.setValue(QStringLiteral("OutputDirectory"), outputDir.path());
     settings.endGroup();
+
+    int savedCount = 0;
 
     if (ui->radioMultiple->isChecked()) {
         foreach (PackPage page, mPackFile.pages()) {
@@ -77,11 +89,19 @@ void PackExtractDialog::accept()
                     QPainter painter(&image);
                     painter.drawImage(tex.ox, tex.oy, page.image, tex.x, tex.y, tex.w, tex.h);
                     painter.end();
-                    image.save(outputDir.filePath(tex.name + QStringLiteral(".png")), "PNG", -1);
+                    QString filePath = outputDir.filePath(tex.name + QStringLiteral(".png"));
+                    // make any directories (if tex.name contains any separators)
+                    QFileInfo fi(filePath);
+                    if (!fi.dir().exists())
+                        fi.dir().mkpath(QLatin1String("."));
+                    if (image.save(filePath, "PNG", -1))
+                        savedCount++;
+                    else
+                        qWarning() << "PackExtractDialog: failed to save" << filePath;
                 }
             }
         }
-    } else if (!prefix.isEmpty()) {
+    } else {
         struct TileInfo {
             QString tileName;
             int tileIndex;
@@ -128,8 +148,24 @@ void PackExtractDialog::accept()
                 painter.drawImage(info.tileRect.topLeft(), info.tileImage);
                 painter.end();
             }
-            image.save(outputDir.filePath(prefix + QLatin1String(".png")), "PNG", -1);
+            QString filePath = outputDir.filePath(prefix + QLatin1String(".png"));
+            if (image.save(filePath, "PNG", -1))
+                savedCount++;
+            else
+                qWarning() << "PackExtractDialog: failed to save" << filePath;
+        } else {
+            QMessageBox::warning(this, tr("Extract .pack Images"),
+                                 tr("No tiles with prefix \"%1\" were found in the .pack file.").arg(prefix));
+            return;
         }
+    }
+
+    if (savedCount == 0) {
+        QMessageBox::warning(this, tr("Extract .pack Images"),
+                             tr("No images were extracted. Check that the path is writable and the prefix matches tiles in the .pack file."));
+    } else {
+        QMessageBox::information(this, tr("Extract .pack Images"),
+                                 tr("Extracted %1 image(s) to:\n%2").arg(savedCount).arg(outputDir.path()));
     }
 
     QDialog::accept();
