@@ -295,8 +295,8 @@ void RoomsDialog::synchUI()
     }
     ui->clearTile->setEnabled(enabled);
 
-    ui->randomTile->setEnabled(hasRoom);
-    ui->chooseTile->setEnabled(hasRoom);
+    ui->randomTile->setEnabled(hasRoom && mTileRow != -1);
+    ui->chooseTile->setEnabled(hasRoom && mTileRow != -1);
 
     if (mRoom) {
         int index = ui->name->findText(mRoom->Name);
