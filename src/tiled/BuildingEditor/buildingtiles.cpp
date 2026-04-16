@@ -339,6 +339,8 @@ bool BuildingTilesMgr::readTxt()
         BuildingTileCategory *sourceCategory = file.categories().at(i);
         BuildingTileCategory *category = mCategories.at(i);
         for (BuildingTileEntry *sourceEntry : sourceCategory->entries()) {
+            if (category->findMatchIgnoreCategory(sourceEntry, VERSION_LATEST) != nullptr)
+                continue;
             category->insertEntry(category->entryCount(), sourceEntry->createCopy(category));
         }
     }

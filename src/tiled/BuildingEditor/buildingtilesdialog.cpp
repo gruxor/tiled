@@ -2187,6 +2187,14 @@ bool BuildingTilesDialog::reloadBuildingFurnitureTxt(const QString &directory)
         mUndoStack->push(new RemoveCategory(this, i));
     }
     for (FurnitureGroup *group : newGroups) {
+        for (int i = 0; i < group->mTiles.size(); i++) {
+            FurnitureTiles *tiles = group->mTiles.at(i);
+            for (int j = i + 1; j < group->mTiles.size(); j++) {
+                if (!tiles->equals(group->mTiles.at(j)))
+                    continue;
+                delete group->mTiles.takeAt(j--);
+            }
+        }
         mUndoStack->push(new AddCategory(this, fgs->groupCount(), group));
     }
     mUndoStack->endMacro();
@@ -2213,6 +2221,8 @@ bool BuildingTilesDialog::reloadBuildingTilesTxt(const QString &directory)
         }
         BuildingTileCategory *sourceCategory = file.categories().at(i);
         for (int j = 0; j < sourceCategory->entryCount(); j++) {
+            if (category->findMatchIgnoreCategory(sourceCategory->entry(j), BuildingTilesFile::VERSION_LATEST))
+                continue;
             BuildingTileEntry *entry = sourceCategory->entry(j)->createCopy(category);
             mUndoStack->push(new AddTileToCategory(this, category, j, entry));
         }

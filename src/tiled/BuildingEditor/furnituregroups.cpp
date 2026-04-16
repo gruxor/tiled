@@ -118,6 +118,21 @@ bool FurnitureGroups::readTxt()
     mRevision = file.getRevision();
     mSourceRevision = file.getSourceRevision();
     mGroups = file.takeGroups();
+
+    // axe duplicates if we find any
+    for (FurnitureGroup *group : std::as_const(mGroups)) {
+        for (int i = 0; i < group->mTiles.size(); i++) {
+            FurnitureTiles *tiles = group->mTiles.at(i);
+            for (int j = i + 1; j < group->mTiles.size(); j++) {
+                FurnitureTiles *target = group->mTiles.at(j);
+                if (!tiles->equals(target))
+                    continue;
+                group->mTiles.removeAt(j--);
+                delete target;
+            }
+        }
+    }
+
     return true;
 #if 0
     FurnitureTiles *tiles = new FurnitureTiles;
